@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -8,7 +10,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Learnova - The future of online learning",
+  title: "Learnova",
   description: "Learnova is a platform for learning new skills",
 };
 
@@ -19,10 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${manrope.variable} font-sans antialiased`}
-      >
-        {children}
+      <body className={`${manrope.variable} font-sans antialiased bg-white text-slate-900`}>
+        <Navbar />
+        <main className="min-h-screen">
+            {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );

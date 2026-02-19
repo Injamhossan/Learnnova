@@ -4,18 +4,17 @@ import Features from "@/components/sections/Features";
 import PopularCourses from "@/components/sections/PopularCourses";
 import Testimonials from "@/components/sections/Testimonials";
 import CallToAction from "@/components/sections/CallToAction";
-import Footer from "@/components/layout/Footer";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col bg-white font-sans">
-      <Navbar />
+    <main className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-yellow-400/30">
+      
       <Hero />
       <Features />
       <PopularCourses />
       <Testimonials />
       <CallToAction />
-      <Footer />
+      
     </main>
   );
 }
