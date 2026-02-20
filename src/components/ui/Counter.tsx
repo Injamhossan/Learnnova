@@ -25,7 +25,6 @@ export default function Counter({ end, duration = 2000, suffix = "", className =
             if (!startTime) startTime = timestamp;
             const progress = Math.min((timestamp - startTime) / duration, 1);
             
-            // Easing function (easeOutExpo) for smooth deceleration
             const easeOutExpo = 1 - Math.pow(2, -10 * progress);
             
             setCount(Math.floor(easeOutExpo * end));
@@ -33,7 +32,7 @@ export default function Counter({ end, duration = 2000, suffix = "", className =
             if (progress < 1) {
               window.requestAnimationFrame(step);
             } else {
-                setCount(end); // Ensure exact final value
+                setCount(end); 
             }
           };
           

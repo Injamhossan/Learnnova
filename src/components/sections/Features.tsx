@@ -30,7 +30,7 @@ export default function Features() {
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-yellow-500 font-bold tracking-wider text-sm uppercase font-satoshi">Why EduFlow</span>
+          <span className="text-yellow-500 font-bold tracking-wider text-sm uppercase font-satoshi">Why Learnova</span>
           <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl font-satoshi">
             Everything you need to succeed
           </h2>
