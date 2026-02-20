@@ -6,16 +6,16 @@ import Footer from "@/components/layout/Footer";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Check if we are on an auth page (login or signup)
   const isAuthPage = pathname?.startsWith("/login") || pathname?.startsWith("/signup");
+  const isAdminPage = pathname?.startsWith("/admin");
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
+      {!isAuthPage && !isAdminPage && <Navbar />}
       <main className="min-h-screen">
-          {children}
+        {children}
       </main>
-      {!isAuthPage && <Footer />}
+      {!isAuthPage && !isAdminPage && <Footer />}
     </>
   );
 }
