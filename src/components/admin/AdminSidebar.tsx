@@ -39,8 +39,12 @@ const navItems = [
   },
 ];
 
-export default function AdminSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+interface AdminSidebarProps {
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+}
+
+export default function AdminSidebar({ collapsed, setCollapsed }: AdminSidebarProps) {
   const pathname = usePathname();
 
   const isActive = (href: string) =>
@@ -48,22 +52,22 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile overlay */}
-      {!collapsed && (
-        <div
-          className="fixed inset-0 bg-slate-900/20 z-20 lg:hidden backdrop-blur-sm"
-          onClick={() => setCollapsed(true)}
-        />
-      )}
-
       <aside
         className={`
           fixed top-0 left-0 h-full z-30 flex flex-col
           bg-white border-r border-slate-200
           transition-all duration-300 ease-in-out
-          ${collapsed ? 'w-0 lg:w-20 overflow-hidden' : 'w-64'}
+          ${collapsed ? 'w-20' : 'w-64'}
         `}
       >
+        {/* Toggle Button in Middle */}
+        <button 
+            onClick={() => setCollapsed(!collapsed)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:shadow-md hover:border-slate-400 transition-all z-40 shadow-sm group"
+        >
+            <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-500 ${collapsed ? '' : 'rotate-180'}`} />
+        </button>
+
         {/* Logo Section */}
         <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-100 shrink-0">
           <Link href="/admin" className="flex items-center gap-2">
@@ -153,19 +157,6 @@ export default function AdminSidebar() {
           </button>
         </div>
       </aside>
-
-      {/* Collapse toggle button (desktop) */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className={`
-          fixed top-4 z-40 hidden lg:flex items-center justify-center
-          w-8 h-8 rounded-xl bg-white border border-slate-200
-          text-slate-400 hover:text-slate-900 hover:border-slate-300 transition-all shadow-md
-          ${collapsed ? 'left-14' : 'left-[240px]'}
-        `}
-      >
-        {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
-      </button>
     </>
   );
 }

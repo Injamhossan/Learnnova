@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import InstructorSidebar from '@/components/instructor/InstructorSidebar';
 import SessionProviderWrapper from '@/components/layout/SessionProviderWrapper';
 
 export const metadata: Metadata = {
   title: 'Instructor Dashboard | Learnova',
   description: 'Manage your courses and students',
 };
+
+import InstructorLayoutShell from '@/components/instructor/InstructorLayoutShell';
 
 export default async function InstructorLayout({
   children,
@@ -25,12 +26,7 @@ export default async function InstructorLayout({
 
   return (
     <SessionProviderWrapper>
-      <div className="min-h-screen bg-slate-50 flex">
-        <InstructorSidebar />
-        <main className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden transition-all duration-300">
-          {children}
-        </main>
-      </div>
+      <InstructorLayoutShell>{children}</InstructorLayoutShell>
     </SessionProviderWrapper>
   );
 }

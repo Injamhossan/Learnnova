@@ -52,8 +52,12 @@ const instructorNavItems = [
   },
 ];
 
-export default function InstructorSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+interface InstructorSidebarProps {
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+}
+
+export default function InstructorSidebar({ collapsed, setCollapsed }: InstructorSidebarProps) {
   const pathname = usePathname();
 
   const isActive = (href: string) =>
@@ -64,6 +68,14 @@ export default function InstructorSidebar() {
       <aside
         className={`fixed top-0 left-0 h-full z-30 flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ease-in-out ${collapsed ? 'w-20' : 'w-64'}`}
       >
+        {/* Toggle Button in Middle */}
+        <button 
+            onClick={() => setCollapsed(!collapsed)}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:shadow-md hover:border-amber-400 transition-all z-40 shadow-sm group"
+        >
+            <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-500 ${collapsed ? '' : 'rotate-180'}`} />
+        </button>
+
         <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-100 shrink-0">
           <Link href="/instructor" className="flex items-center gap-2">
             <Image 

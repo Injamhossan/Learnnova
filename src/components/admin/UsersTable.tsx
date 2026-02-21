@@ -228,16 +228,15 @@ export default function UsersTable() {
                           <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${roleBadge[user.role]}`}>
                             {user.role}
                           </span>
-                          {isSuperAdmin && updatingId !== user.id && (
+                          {isSuperAdmin && user.role !== 'SUPER_ADMIN' && updatingId !== user.id && (
                             <select 
-                              className="text-[10px] font-bold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-100"
+                              className="text-[10px] font-bold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
                               value={user.role}
                               onChange={(e) => updateRole(user.id, e.target.value)}
                             >
                               <option value="STUDENT">SET STUDENT</option>
                               <option value="INSTRUCTOR">SET INSTRUCTOR</option>
                               <option value="ADMIN">SET ADMIN</option>
-                              <option value="SUPER_ADMIN">SET SUPER ADMIN</option>
                             </select>
                           )}
                         </div>
@@ -245,8 +244,10 @@ export default function UsersTable() {
                       <td className="px-8 py-5">
                         <button 
                           onClick={() => toggleStatus(user.id)}
-                          disabled={updatingId === user.id}
-                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold transition-all hover:scale-105 active:scale-95 ${
+                          disabled={updatingId === user.id || user.role === 'SUPER_ADMIN'}
+                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
+                            user.role === 'SUPER_ADMIN' ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
+                          } ${
                             user.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'
                           }`}
                         >
@@ -276,7 +277,7 @@ export default function UsersTable() {
                       </td>
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                          {isSuperAdmin && user.id !== (session?.user as any)?.id && (
+                          {isSuperAdmin && user.role !== 'SUPER_ADMIN' && (
                             <button 
                               onClick={() => deleteUser(user.id)}
                               className="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 transition-all border border-red-100 shadow-sm"
@@ -284,9 +285,11 @@ export default function UsersTable() {
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
-                          <button className="w-9 h-9 rounded-xl bg-slate-50 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-all shadow-sm border border-slate-100">
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
+                          {user.role !== 'SUPER_ADMIN' && (
+                            <button className="w-9 h-9 rounded-xl bg-slate-50 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-all shadow-sm border border-slate-100">
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
