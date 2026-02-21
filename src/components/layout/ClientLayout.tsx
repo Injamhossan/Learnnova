@@ -8,14 +8,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const isAuthPage = pathname?.startsWith("/login") || pathname?.startsWith("/signup");
   const isAdminPage = pathname?.startsWith("/admin");
+  const isStudentPage = pathname?.startsWith("/student");
+  const isInstructorPage = pathname?.startsWith("/instructor");
+
+  const hideNavbarFooter = isAuthPage || isAdminPage || isStudentPage || isInstructorPage;
 
   return (
     <>
-      {!isAuthPage && !isAdminPage && <Navbar />}
+      {!hideNavbarFooter && <Navbar />}
       <main className="min-h-screen">
         {children}
       </main>
-      {!isAuthPage && !isAdminPage && <Footer />}
+      {!hideNavbarFooter && <Footer />}
     </>
   );
 }

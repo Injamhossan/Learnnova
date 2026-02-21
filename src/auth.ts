@@ -67,7 +67,45 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    ...authConfig.callbacks,
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google' || account?.provider === 'github') {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        console.log(`Syncing social login for ${user.email} with backend...`);
+        
+        try {
+          const res = await fetch(`${apiUrl}/api/auth/social-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.email,
+              fullName: user.name,
+              avatarUrl: user.image,
+            }),
+          });
+
+          if (!res.ok) {
+            console.error('Failed to sync social login with backend');
+            return false;
+          }
+
+          const data = await res.json();
+          console.log(`Social sync successful, assigned role: ${data.role}`);
+          
+          // Attach backend data to the user object so it's available in the jwt callback
+          (user as any).id = data.id;
+          (user as any).role = data.role;
+          (user as any).token = data.token;
+          
+          return true;
+        } catch (error: any) {
+          console.error('Error during social login sync:', error.message);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;

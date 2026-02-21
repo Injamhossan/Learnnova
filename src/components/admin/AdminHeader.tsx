@@ -50,12 +50,14 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
 
         {/* Avatar */}
         <div className="flex items-center gap-3 pl-1">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[11px] font-bold shadow-md shadow-slate-200">
-            {initials || 'A'}
+          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[11px] font-bold shadow-md shadow-slate-200 uppercase">
+            {initials || 'U'}
           </div>
           <div className="hidden md:block">
             <p className="text-sm font-bold text-slate-900 leading-tight">{name}</p>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Super Admin</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+              {(session?.user as any)?.role || 'User'}
+            </p>
           </div>
         </div>
       </div>

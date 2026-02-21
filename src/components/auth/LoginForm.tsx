@@ -37,9 +37,6 @@ export default function LoginForm() {
         setLoading(false);
       } else {
         router.refresh();
-        // The middleware in auth.config.ts will handle the redirection 
-        // once the session is updated and we navigate somewhere.
-        // We can push to a "gate" or just "/"
         router.push("/");
       }
     } catch (err) {
@@ -95,7 +92,7 @@ export default function LoginForm() {
           <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
-              onClick={() => handleGoogleSignIn()}
+              onClick={() => signIn('google', { callbackUrl: '/' })}
               className="flex w-full items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

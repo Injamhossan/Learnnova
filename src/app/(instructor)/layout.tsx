@@ -16,9 +16,10 @@ export default async function InstructorLayout({
 }) {
   const session = await auth();
 
-  if (!session || (session.user as any)?.role !== 'INSTRUCTOR') {
-    if ((session?.user as any)?.role === 'ADMIN') redirect('/admin');
-    if ((session?.user as any)?.role === 'STUDENT') redirect('/student');
+  const userRole = (session?.user as any)?.role?.toUpperCase();
+  if (!session || userRole !== 'INSTRUCTOR') {
+    if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') redirect('/admin');
+    if (userRole === 'STUDENT') redirect('/student');
     redirect('/login');
   }
 

@@ -1,12 +1,13 @@
-"use client";
+  "use client";
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, Menu, X } from 'lucide-react';
+import { ChevronRight, Menu, X, User, LayoutDashboard, LogOut } from 'lucide-react';
 import NavLogo from '@/assets/NavLogo.png';
 import { cn } from '@/lib/utils';
+import { useSession, signOut } from 'next-auth/react';
+import { useState, useEffect } from 'react';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -19,7 +20,16 @@ const navLinks = [
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+
+  const getDashboardLink = () => {
+    const role = (session?.user as any)?.role?.toUpperCase();
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') return '/admin';
+    if (role === 'INSTRUCTOR') return '/instructor';
+    return '/student';
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,16 +79,66 @@ export default function Navbar() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden sm:block text-sm font-medium text-slate-900 hover:text-yellow-600 transition-colors">
-              Log In
-            </Link>
-            <Link 
-              href="/signup" 
-              className="hidden sm:inline-flex h-10 items-center justify-center rounded-full bg-slate-900 px-6 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800 hover:scale-105 active:scale-95"
-            >
-              Get Started
-            </Link>
+          <div className="flex items-center gap-4 relative">
+            {status === "loading" ? (
+              <div className="w-10 h-10 rounded-full bg-slate-100 animate-pulse" />
+            ) : session ? (
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <button 
+                    onClick={() => setProfileOpen(!profileOpen)}
+                    className="w-10 h-10 rounded-full border-2 border-slate-200 overflow-hidden hover:border-yellow-500 transition-colors bg-slate-50 flex items-center justify-center group"
+                  >
+                    {session.user?.image ? (
+                        <img src={session.user.image} alt="User" className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-100 uppercase font-bold text-slate-500 text-xs">
+                          {session.user?.name?.charAt(0) || <User className="w-4 h-4" />}
+                        </div>
+                    )}
+                  </button>
+
+                  {profileOpen && (
+                    <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-slate-900/5 transition-all animate-in fade-in zoom-in duration-200 z-[60]">
+                      <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                        <p className="text-sm font-bold text-slate-900 truncate">{session.user?.name || 'User'}</p>
+                        <p className="text-xs text-slate-500 truncate">{session.user?.email}</p>
+                      </div>
+                      <Link 
+                        href={getDashboardLink()}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors"
+                        onClick={() => setProfileOpen(false)}
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        Dashboard
+                      </Link>
+                      <button 
+                        onClick={() => {
+                          setProfileOpen(false);
+                          signOut({ callbackUrl: '/' });
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors mt-1"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Log Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <Link href="/login" className="hidden sm:block text-sm font-medium text-slate-900 hover:text-yellow-600 transition-colors">
+                  Log In
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="hidden sm:inline-flex h-10 items-center justify-center rounded-full bg-slate-900 px-6 text-sm font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800 hover:scale-105 active:scale-95"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
             <button 
               className="md:hidden p-2 text-slate-600 hover:text-slate-900" 
               onClick={() => setMobileMenuOpen(true)}
@@ -129,20 +189,50 @@ export default function Navbar() {
               </Link>
             ))}
             <hr className="my-4 border-slate-100" />
-            <Link 
-              href="/login" 
-              className="p-3 rounded-xl text-base font-medium text-slate-600 hover:bg-slate-50 text-center"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Log In
-            </Link>
-            <Link 
-              href="/signup" 
-              className="w-full flex h-12 items-center justify-center rounded-xl bg-slate-900 text-base font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Get Started Free
-            </Link>
+            
+            {session ? (
+              <>
+                <div className="px-3 py-2 mb-2">
+                  <p className="text-sm font-bold text-slate-900">{session.user?.name}</p>
+                  <p className="text-xs text-slate-500">{session.user?.email}</p>
+                </div>
+                <Link 
+                  href={getDashboardLink()}
+                  className="p-3 rounded-xl text-base font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LayoutDashboard className="w-5 h-5" />
+                  Dashboard
+                </Link>
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    signOut({ callbackUrl: '/' });
+                  }}
+                  className="p-3 rounded-xl text-base font-medium text-red-600 hover:bg-red-50 text-left flex items-center gap-2"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/login" 
+                  className="p-3 rounded-xl text-base font-medium text-slate-600 hover:bg-slate-50 text-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Log In
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="w-full flex h-12 items-center justify-center rounded-xl bg-slate-900 text-base font-medium text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Get Started Free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
