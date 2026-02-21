@@ -9,24 +9,32 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const userRole = (auth?.user as any)?.role;
-      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+      
       const isOnAdmin = nextUrl.pathname.startsWith('/admin');
-      const isOnAuth =
-        nextUrl.pathname.startsWith('/login') ||
-        nextUrl.pathname.startsWith('/signup');
+      const isOnStudent = nextUrl.pathname.startsWith('/student');
+      const isOnInstructor = nextUrl.pathname.startsWith('/instructor');
+      const isOnAuth = nextUrl.pathname.startsWith('/login') || nextUrl.pathname.startsWith('/signup');
 
-      if (isOnAdmin) {
-        if (isLoggedIn && userRole === 'ADMIN') return true;
-        if (isLoggedIn) return Response.redirect(new URL('/', nextUrl));
-        return Response.redirect(new URL('/login', nextUrl));
+      // 1. Role-based protection
+      if (isOnAdmin && (!isLoggedIn || userRole !== 'ADMIN')) {
+          return Response.redirect(new URL('/login', nextUrl));
+      }
+      
+      if (isOnStudent && (!isLoggedIn || userRole !== 'STUDENT')) {
+          return Response.redirect(new URL('/login', nextUrl));
       }
 
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false;
-      } else if (isLoggedIn && isOnAuth) {
-        return Response.redirect(new URL('/dashboard', nextUrl));
+      if (isOnInstructor && (!isLoggedIn || userRole !== 'INSTRUCTOR')) {
+          return Response.redirect(new URL('/login', nextUrl));
       }
+
+      // 2. Auth page redirection after login
+      if ((isOnAuth || nextUrl.pathname === '/') && isLoggedIn) {
+          if (userRole === 'ADMIN') return Response.redirect(new URL('/admin', nextUrl));
+          if (userRole === 'INSTRUCTOR') return Response.redirect(new URL('/instructor', nextUrl));
+          if (userRole === 'STUDENT') return Response.redirect(new URL('/student', nextUrl));
+      }
+
       return true;
     },
   },

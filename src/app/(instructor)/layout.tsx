@@ -26,7 +26,7 @@ export default async function InstructorLayout({
     <SessionProviderWrapper>
       <div className="min-h-screen bg-slate-50 flex">
         <InstructorSidebar />
-        <main className="flex-1 ml-64 flex flex-col min-h-screen overflow-hidden transition-all duration-300">
+        <main className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-hidden transition-all duration-300">
           {children}
         </main>
       </div>

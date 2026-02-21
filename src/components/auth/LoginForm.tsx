@@ -36,9 +36,11 @@ export default function LoginForm() {
         setError("Invalid email or password");
         setLoading(false);
       } else {
-        // Redirect will be handled by auth.config.ts or we can do it manually
-        router.push("/admin");
         router.refresh();
+        // The middleware in auth.config.ts will handle the redirection 
+        // once the session is updated and we navigate somewhere.
+        // We can push to a "gate" or just "/"
+        router.push("/");
       }
     } catch (err) {
       setError("An unexpected error occurred");

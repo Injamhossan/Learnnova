@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { User, Mail, Lock, GraduationCap, Presentation, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, GraduationCap, Presentation, ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import NavLogo from "@/assets/NavLogo.png";
-import { handleGoogleSignIn } from "@/app/actions/auth";
+import { handleGoogleSignIn, handleCredentialsSignup } from "@/app/actions/auth";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 interface SignupFormProps {
   role: 'student' | 'instructor';
@@ -15,6 +17,55 @@ interface SignupFormProps {
 
 export default function SignupForm({ role, setRole }: SignupFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const formData = new FormData(e.currentTarget);
+    const fullName = formData.get("fullName") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    const signupData = {
+      fullName,
+      email,
+      password,
+      role: role.toUpperCase(), // STUDENT or INSTRUCTOR
+    };
+
+    try {
+      const result = await handleCredentialsSignup(signupData);
+
+      if (result.error) {
+        setError(result.error);
+        setLoading(false);
+      } else {
+        // Automatically login after signup
+        const loginResult = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (loginResult?.error) {
+          router.push("/login");
+        } else {
+          // Redirect based on role
+          const target = role === 'student' ? '/student' : '/instructor';
+          router.push(target);
+          router.refresh();
+        }
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 sm:p-24 xl:p-32 relative">
@@ -30,13 +81,14 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
                 <Image src={NavLogo} alt="Logo" width={120} height={40} className="h-10 w-auto object-contain mb-6" />
                 <h1 className="text-3xl font-bold text-slate-900 font-satoshi mb-2">Create an account</h1>
                 <p className="text-slate-500 font-manrope">
-                    {role === 'student' ? 'Start your 14-day free trial.' : 'Join as an instructor today.'} No credit card required.
+                    {role === 'student' ? 'Start your learning journey.' : 'Join as an instructor today.'}
                 </p>
             </div>
 
             {/* Role Switcher */}
             <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-8">
                 <button
+                    type="button"
                     onClick={() => setRole('student')}
                     className={`flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${
                         role === 'student' 
@@ -48,6 +100,7 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
                     Student
                 </button>
                 <button
+                    type="button"
                     onClick={() => setRole('instructor')}
                     className={`flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 ${
                         role === 'instructor' 
@@ -60,13 +113,21 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
                 </button>
             </div>
 
-            <form className="space-y-5">
+            {error && (
+                <div className="p-3 mb-4 rounded-lg bg-red-50 text-red-500 text-sm font-medium border border-red-100 italic">
+                    {error}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-1.5">
                     <label className="text-sm font-medium text-slate-900">Full Name</label>
                     <div className="relative">
                         <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input 
+                            name="fullName"
                             type="text" 
+                            required
                             placeholder="John Doe"
                             className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all font-manrope text-sm"
                         />
@@ -78,7 +139,9 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
                     <div className="relative">
                         <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input 
+                            name="email"
                             type="email" 
+                            required
                             placeholder="name@example.com"
                             className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all font-manrope text-sm"
                         />
@@ -90,7 +153,10 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
                     <div className="relative">
                         <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input 
+                            name="password"
                             type={showPassword ? "text" : "password"} 
+                            required
+                            minLength={8}
                             placeholder="Create a password"
                             className="w-full pl-11 pr-12 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500 transition-all font-manrope text-sm"
                         />
@@ -116,8 +182,19 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
                     <p className="text-xs text-slate-500 font-manrope">Must be at least 8 characters.</p>
                 </div>
 
-                <button type="submit" className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:scale-[0.98] font-satoshi mt-4">
-                    {role === 'student' ? 'Get started' : 'Apply as Instructor'}
+                <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:scale-[0.98] font-satoshi mt-4 flex items-center justify-center disabled:opacity-70"
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                            Creating account...
+                        </>
+                    ) : (
+                        role === 'student' ? 'Get started' : 'Apply as Instructor'
+                    )}
                 </button>
             </form>
 
