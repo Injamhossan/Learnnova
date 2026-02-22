@@ -5,10 +5,16 @@ import { Mail, Lock, Github, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import NavLogo from "@/assets/NavLogo.png";
-import { handleGoogleSignIn } from "@/app/actions/auth";
 import { Checkbox } from "@/components/ui/checkbox";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+
+function getRoleDashboard(role: string): string {
+  const r = role?.toUpperCase();
+  if (r === "ADMIN" || r === "SUPER_ADMIN") return "/admin";
+  if (r === "INSTRUCTOR") return "/instructor";
+  return "/student";
+}
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +42,12 @@ export default function LoginForm() {
         setError("Invalid email or password");
         setLoading(false);
       } else {
-        router.refresh();
-        router.push("/");
+        // Fetch session to get role then redirect
+        const sessionRes = await fetch("/api/auth/session");
+        const sessionData = await sessionRes.json();
+        const role = (sessionData?.user as any)?.role || "STUDENT";
+        const dashboard = getRoleDashboard(role);
+        window.location.href = dashboard;
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -92,7 +102,7 @@ export default function LoginForm() {
           <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
-              onClick={() => signIn('google', { callbackUrl: '/' })}
+              onClick={() => signIn('google', { callbackUrl: '/auth/callback' })}
               className="flex w-full items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

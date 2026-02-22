@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, MoreVertical, UserCheck, UserX, Shield, Download, Plus, Trash2, ShieldCheck, ShieldAlert, Loader2 } from 'lucide-react';
+import { Search, UserCheck, UserX, Download, Plus, Trash2, ShieldCheck, ShieldAlert, Loader2, X, Eye, EyeOff } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 interface User {
@@ -36,6 +36,13 @@ export default function UsersTable() {
 
   const currentUserRole = (session?.user as any)?.role?.toUpperCase();
   const isSuperAdmin = currentUserRole === 'SUPER_ADMIN';
+
+  // Create Admin Modal state
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({ fullName: '', email: '', password: '', role: 'ADMIN' });
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -131,6 +138,35 @@ export default function UsersTable() {
     }
   };
 
+  const createAdminUser = async () => {
+    if (!isSuperAdmin) return;
+    setCreating(true);
+    setCreateError('');
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const res = await fetch(`${apiUrl}/api/admin/users/create-admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${(session?.user as any)?.backendToken}`,
+        },
+        body: JSON.stringify(createForm),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setShowCreateModal(false);
+        setCreateForm({ fullName: '', email: '', password: '', role: 'ADMIN' });
+        fetchUsers();
+      } else {
+        setCreateError(data.message || 'Failed to create admin account');
+      }
+    } catch (e) {
+      setCreateError('An error occurred');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page header with actions */}
@@ -151,14 +187,19 @@ export default function UsersTable() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-             <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                <Download className="w-4 h-4" />
-                EXPORT
-             </button>
-             <button className="flex items-center gap-2 bg-slate-900 px-4 py-2 rounded-xl text-xs font-bold text-white hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+            <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
+               <Download className="w-4 h-4" />
+               EXPORT
+            </button>
+            {isSuperAdmin && (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 bg-indigo-600 px-4 py-2 rounded-xl text-xs font-bold text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+              >
                 <Plus className="w-4 h-4" />
-                ADD USER
-             </button>
+                CREATE ADMIN
+              </button>
+            )}
           </div>
       </div>
 
@@ -285,9 +326,9 @@ export default function UsersTable() {
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
-                          {user.role !== 'SUPER_ADMIN' && (
+                          {user.role !== 'SUPER_ADMIN' && isSuperAdmin && (
                             <button className="w-9 h-9 rounded-xl bg-slate-50 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-all shadow-sm border border-slate-100">
-                              <MoreVertical className="w-4 h-4" />
+                              <ShieldCheck className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -339,6 +380,110 @@ export default function UsersTable() {
           </div>
         </div>
       </div>
+
+      {/* Create Admin Modal */}
+      {showCreateModal && isSuperAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="text-xl font-bold text-slate-900">Create Admin Account</p>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5">Super Admin only</p>
+              </div>
+              <button
+                onClick={() => { setShowCreateModal(false); setCreateError(''); }}
+                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Full Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. John Smith"
+                  value={createForm.fullName}
+                  onChange={e => setCreateForm(f => ({ ...f, fullName: e.target.value }))}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Email Address *</label>
+                <input
+                  type="email"
+                  placeholder="admin@learnova.com"
+                  value={createForm.email}
+                  onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Password *</label>
+                <div className="relative">
+                  <input
+                    type={showCreatePassword ? 'text' : 'password'}
+                    placeholder="Minimum 8 characters"
+                    value={createForm.password}
+                    onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))}
+                    className="w-full border border-slate-200 rounded-xl pl-4 pr-11 py-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCreatePassword(!showCreatePassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showCreatePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Role *</label>
+                <select
+                  value={createForm.role}
+                  onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 transition-all bg-white"
+                >
+                  <option value="ADMIN">ADMIN — Operational Manager</option>
+                  <option value="SUPER_ADMIN">SUPER ADMIN — Platform Owner</option>
+                </select>
+              </div>
+
+              {createError && (
+                <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                  <p className="text-xs font-bold text-red-600">{createError}</p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => { setShowCreateModal(false); setCreateError(''); }}
+                  className="flex-1 py-3 rounded-2xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={createAdminUser}
+                  disabled={!createForm.fullName || !createForm.email || !createForm.password || creating}
+                  className="flex-1 py-3 rounded-2xl bg-indigo-600 text-sm font-bold text-white hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+                >
+                  {creating ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>
+                  ) : (
+                    <>
+                      <ShieldAlert className="w-4 h-4" />
+                      Create Account
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

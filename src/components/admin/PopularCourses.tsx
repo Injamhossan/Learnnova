@@ -1,41 +1,56 @@
 'use client';
 
+import Link from 'next/link';
 import { Star, ArrowUpRight } from 'lucide-react';
 
-const mockCourses = [
-  { rank: 1, name: 'Complete React & TypeScript Masterclass', instructor: 'Sarah Johnson', enrollments: 4230, completion: '78%', category: 'Web Dev' },
-  { rank: 2, name: 'Python for Data Science', instructor: 'Dr. Emily Parker', enrollments: 3810, completion: '65%', category: 'Data' },
-  { rank: 3, name: 'UI/UX Design Fundamentals', instructor: 'Marcus Chen', enrollments: 3540, completion: '82%', category: 'Design' },
-  { rank: 4, name: 'Machine Learning A-Z', instructor: 'Dr. James Wilson', enrollments: 3120, completion: '59%', category: 'AI/ML' },
-  { rank: 5, name: 'Node.js & Express Backend', instructor: 'Alex Rodriguez', enrollments: 2890, completion: '71%', category: 'Backend' },
-];
+interface Course {
+  id: string;
+  title: string;
+  totalEnrollments: number;
+  averageRating: number;
+  price: number;
+  instructor?: { user?: { fullName: string } };
+  category?: { name: string };
+}
 
-const categoryColors: Record<string, string> = {
-  'Web Dev': 'bg-indigo-50 text-indigo-700 border-indigo-100',
-  'Data': 'bg-blue-50 text-blue-700 border-blue-100',
-  'Design': 'bg-rose-50 text-rose-700 border-rose-100',
-  'AI/ML': 'bg-amber-50 text-amber-700 border-amber-100',
-  'Backend': 'bg-emerald-50 text-emerald-700 border-emerald-100',
-};
+export default function PopularCourses({ courses }: { courses: Course[] }) {
+  if (courses.length === 0) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Popular Courses</h3>
+            <p className="text-sm font-medium text-slate-500 mt-1">Highest enrollment metrics</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-16 text-slate-300">
+          <p className="text-xs font-bold uppercase tracking-widest">No courses published yet</p>
+        </div>
+      </div>
+    );
+  }
 
-export default function PopularCourses() {
   return (
     <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-lg font-bold text-slate-900">Popular Courses</h3>
-          <p className="text-sm font-medium text-slate-500 mt-1">Highest enrollment metrics this month</p>
+          <p className="text-sm font-medium text-slate-500 mt-1">Highest enrollment metrics</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
-          View Detailed Analytics
+        <Link
+          href="/admin/analytics"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
+        >
+          View Analytics
           <ArrowUpRight className="w-4 h-4" />
-        </button>
+        </Link>
       </div>
+
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100">
-              {['#', 'Course Name', 'Instructor', 'Category', 'Enrollments', 'Avg. Completion'].map((h) => (
+              {['#', 'Course Name', 'Instructor', 'Category', 'Enrollments', 'Rating', 'Price'].map((h) => (
                 <th
                   key={h}
                   className="text-left text-[11px] font-bold text-slate-400 uppercase tracking-widest pb-4 pr-6 last:pr-0"
@@ -46,49 +61,58 @@ export default function PopularCourses() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {mockCourses.map((c) => (
-              <tr key={c.rank} className="hover:bg-slate-50/50 transition-all group cursor-default">
-                <td className="py-5 pr-6">
-                  <span
-                    className={`text-sm font-bold ${
-                      c.rank === 1 ? 'text-amber-500' : 'text-slate-400'
-                    }`}
-                  >
-                    0{c.rank}
-                  </span>
-                </td>
-                <td className="py-5 pr-6 max-w-[320px]">
-                   <div className="flex items-center gap-1">
+            {courses.slice(0, 8).map((c, idx) => {
+              const rank = idx + 1;
+              const categoryName = c.category?.name || 'Uncategorized';
+              const instructorName = c.instructor?.user?.fullName || '—';
+              return (
+                <tr key={c.id} className="hover:bg-slate-50/50 transition-all group cursor-default">
+                  <td className="py-4 pr-6">
+                    <span className={`text-sm font-bold ${rank === 1 ? 'text-amber-500' : 'text-slate-300'}`}>
+                      {String(rank).padStart(2, '0')}
+                    </span>
+                  </td>
+                  <td className="py-4 pr-6 max-w-[280px]">
+                    <div className="flex items-center gap-1.5">
                       <p className="text-slate-900 font-bold truncate group-hover:text-black transition-colors">
-                        {c.name}
+                        {c.title}
                       </p>
-                      {c.rank === 1 && <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 shrink-0" />}
-                   </div>
-                </td>
-                <td className="py-5 pr-6">
-                  <p className="text-slate-600 font-bold text-xs">{c.instructor}</p>
-                </td>
-                <td className="py-5 pr-6">
-                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${categoryColors[c.category]}`}>
-                    {c.category.toUpperCase()}
-                  </span>
-                </td>
-                <td className="py-5 pr-6">
-                  <p className="text-slate-900 font-bold tabular-nums">{c.enrollments.toLocaleString()}</p>
-                </td>
-                <td className="py-5">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 bg-slate-100 rounded-full min-w-[80px] overflow-hidden">
-                      <div
-                        className="h-full bg-slate-900 rounded-full shadow-sm"
-                        style={{ width: c.completion }}
-                      />
+                      {rank === 1 && <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 shrink-0" />}
                     </div>
-                    <span className="text-xs text-slate-900 font-bold tabular-nums">{c.completion}</span>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="py-4 pr-6">
+                    <p className="text-slate-600 font-bold text-xs whitespace-nowrap">{instructorName}</p>
+                  </td>
+                  <td className="py-4 pr-6">
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full border bg-slate-50 text-slate-600 border-slate-100">
+                      {categoryName.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="py-4 pr-6">
+                    <p className="text-slate-900 font-bold tabular-nums">
+                      {(c.totalEnrollments || 0).toLocaleString()}
+                    </p>
+                  </td>
+                  <td className="py-4 pr-6">
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      <span className="text-xs font-bold text-slate-900 tabular-nums">
+                        {c.averageRating > 0 ? c.averageRating.toFixed(1) : '—'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-4">
+                    <p className="text-slate-900 font-bold tabular-nums text-xs">
+                      {c.price === 0 ? (
+                        <span className="text-emerald-600">Free</span>
+                      ) : (
+                        `$${c.price.toFixed(2)}`
+                      )}
+                    </p>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

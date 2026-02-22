@@ -3,7 +3,6 @@ import Features from "@/components/sections/Features";
 import PopularCourses from "@/components/sections/PopularCourses";
 import Testimonials from "@/components/sections/Testimonials";
 import CallToAction from "@/components/sections/CallToAction";
-import FingerprintDemo from "@/components/sections/FingerprintDemo";
 
 export default function Home() {
   return (
@@ -14,7 +13,6 @@ export default function Home() {
       <PopularCourses />
       <Testimonials />
       <CallToAction />
-      <FingerprintDemo />
       
     </main>
   );

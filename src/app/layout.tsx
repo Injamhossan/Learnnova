@@ -14,8 +14,6 @@ export const metadata: Metadata = {
   description: "Learnova is a platform for learning new skills",
 };
 
-import FingerprintProviderWrapper from "@/components/providers/FingerprintProviderWrapper";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,13 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${manrope.variable} font-sans antialiased bg-white text-slate-900`}>
-        <FingerprintProviderWrapper>
-          <SessionProviderWrapper>
-            <ClientLayout>
-              {children}
-            </ClientLayout>
-          </SessionProviderWrapper>
-        </FingerprintProviderWrapper>
+        <SessionProviderWrapper>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
