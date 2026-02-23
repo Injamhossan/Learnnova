@@ -2,6 +2,7 @@
 
 import { Bell } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import UserAvatar from '@/components/common/UserAvatar';
 
 interface Props {
   title: string;
@@ -26,9 +27,13 @@ export default function StudentHeader({ title, subtitle, actions }: Props) {
           <Bell className="w-4.5 h-4.5 w-[18px] h-[18px]" />
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
         </button>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-md shadow-blue-500/25">
-          {initials}
-        </div>
+        <UserAvatar 
+          src={user?.image} 
+          name={user?.name} 
+          size={36} 
+          className="rounded-xl shadow-md shadow-blue-500/25" 
+          fallbackClassName="bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+        />
       </div>
     </header>
   );

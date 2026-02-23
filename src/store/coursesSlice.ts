@@ -12,7 +12,7 @@ export interface Course {
   thumbnailUrl?: string;
   price: number;
   level: string;
-  isPublished: boolean;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   totalEnrollments: number;
   averageRating: number;
   categoryId?: string;
@@ -104,9 +104,9 @@ export const deleteCourse = createAsyncThunk(
 
 export const publishCourse = createAsyncThunk(
   'courses/publish',
-  async ({ token, id, isPublished }: { token: string; id: string; isPublished: boolean }, { rejectWithValue }) => {
+  async ({ token, id, status }: { token: string; id: string; status: 'DRAFT' | 'PUBLISHED' }, { rejectWithValue }) => {
     try {
-      return await courseApi.update(token, id, { isPublished });
+      return await courseApi.update(token, id, { status });
     } catch (e: any) {
       return rejectWithValue(e.message);
     }
@@ -139,7 +139,9 @@ const coursesSlice = createSlice({
     // Optimistic toggle publish
     toggleCoursePublishedOptimistic(state, action: PayloadAction<string>) {
       const c = state.myCourses.find((c) => c.id === action.payload);
-      if (c) c.isPublished = !c.isPublished;
+      if (c) {
+        c.status = c.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
+      }
     },
   },
   extraReducers: (builder) => {

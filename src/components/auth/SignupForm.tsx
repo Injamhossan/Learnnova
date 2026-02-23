@@ -7,6 +7,7 @@ import Image from "next/image";
 import NavLogo from "@/assets/NavLogo.png";
 import { handleGoogleSignIn, handleCredentialsSignup } from "@/app/actions/auth";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -178,13 +179,16 @@ export default function SignupForm({ role, setRole }: SignupFormProps) {
                         </button>
                     </div>
                     <p className="text-xs text-slate-500 font-manrope">Must be at least 8 characters.</p>
-                    <div className="flex items-center gap-2">
-                        <Checkbox id="terms" required />
-                        <label htmlFor="terms" className="text-sm text-slate-600 select-none font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            I agree to the <Link href="/terms" className="text-slate-900 underline hover:text-yellow-600">Terms & Conditions</Link>
-                        </label>
-                    </div>
+                </div>
 
+                <div className="flex items-center gap-2">
+                    <Checkbox id="terms" required />
+                    <Label 
+                        htmlFor="terms" 
+                        className="text-sm text-slate-600 select-none font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                        I agree to the <Link href="/terms" className="text-slate-900 underline hover:text-yellow-600">Terms & Conditions</Link>
+                    </Label>
                 </div>
 
                 <button 

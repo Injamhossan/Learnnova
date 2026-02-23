@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import RoleSelectionModal from "@/components/auth/RoleSelectionModal";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -15,6 +16,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <>
+      <RoleSelectionModal />
       {!hideNavbarFooter && <Navbar />}
       <main className="min-h-screen">
         {children}

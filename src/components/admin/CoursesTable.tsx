@@ -10,7 +10,7 @@ interface Course {
   slug: string;
   price: number;
   level: string;
-  isPublished: boolean;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   totalEnrollments: number;
   createdAt: string;
   instructor: { user: { fullName: string; email: string } };
@@ -68,9 +68,10 @@ export default function CoursesTable() {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${(session?.user as any)?.backendToken}` },
       });
+      const data = await res.json();
       if (res.ok) {
         setCourses(prev =>
-          prev.map(c => c.id === courseId ? { ...c, isPublished: !c.isPublished } : c)
+          prev.map(c => c.id === courseId ? { ...c, status: data.status } : c)
         );
       }
     } catch (e) {
@@ -157,12 +158,12 @@ export default function CoursesTable() {
                     </td>
                     <td className="px-8 py-5">
                       <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold ${
-                        course.isPublished
+                        course.status === 'PUBLISHED'
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
                           : 'bg-slate-50 text-slate-500 border border-slate-100'
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${course.isPublished ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                        {course.isPublished ? 'PUBLISHED' : 'DRAFT'}
+                        <span className={`w-1.5 h-1.5 rounded-full ${course.status === 'PUBLISHED' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                        {course.status}
                       </span>
                     </td>
                     <td className="px-8 py-5">
@@ -170,15 +171,15 @@ export default function CoursesTable() {
                         onClick={() => togglePublish(course.id)}
                         disabled={togglingId === course.id}
                         className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-bold transition-all border ${
-                          course.isPublished
+                          course.status === 'PUBLISHED'
                             ? 'bg-white border-red-200 text-red-600 hover:bg-red-50'
                             : 'bg-slate-900 border-slate-900 text-white hover:bg-slate-800 shadow-md shadow-slate-200'
                         } disabled:opacity-50`}
                       >
                         {togglingId === course.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : course.isPublished ? (
-                          <><EyeOff className="w-3.5 h-3.5" /> ARCHIVE</>
+                        ) : course.status === 'PUBLISHED' ? (
+                          <><EyeOff className="w-3.5 h-3.5" /> UNPUBLISH</>
                         ) : (
                           <><Eye className="w-3.5 h-3.5" /> PUBLISH</>
                         )}

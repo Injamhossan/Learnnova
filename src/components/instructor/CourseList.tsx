@@ -13,22 +13,23 @@ import { fetchMyCourses, deleteCourse, Course } from '@/store/coursesSlice';
 import { addToast, toast } from '@/store/uiSlice';
 import { cn } from '@/lib/utils';
 
-// ── Status Badge ──────────────────────────────────────────────────────────────
-function StatusBadge({ published }: { published: boolean }) {
+// ── Status Badge
+function StatusBadge({ status }: { status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' }) {
+  const isPublished = status === 'PUBLISHED';
   return (
     <span className={cn(
       'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border',
-      published
+      isPublished
         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
         : 'bg-slate-100 text-slate-500 border-slate-200'
     )}>
-      {published ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-      {published ? 'Published' : 'Draft'}
+      {isPublished ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+      {isPublished ? 'Published' : status}
     </span>
   );
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+// ── Skeleton
 function CardSkeleton() {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden animate-pulse">
@@ -45,7 +46,7 @@ function CardSkeleton() {
   );
 }
 
-// ── Course Grid Card ──────────────────────────────────────────────────────────
+// ── Course Grid Card 
 function CourseCard({ course, onDelete }: { course: Course; onDelete: (id: string) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const enrollments = course._count?.enrollments ?? course.totalEnrollments ?? 0;
@@ -66,7 +67,7 @@ function CourseCard({ course, onDelete }: { course: Course; onDelete: (id: strin
           </div>
         )}
         <div className="absolute top-3 left-3">
-          <StatusBadge published={course.isPublished} />
+          <StatusBadge status={course.status} />
         </div>
         <div className="absolute top-3 right-3">
           <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-lg">
@@ -118,7 +119,7 @@ function CourseCard({ course, onDelete }: { course: Course; onDelete: (id: strin
   );
 }
 
-// ── Course List Row ───────────────────────────────────────────────────────────
+// ── Course List Row
 function CourseRow({ course, onDelete }: { course: Course; onDelete: (id: string) => void }) {
   const enrollments = course._count?.enrollments ?? course.totalEnrollments ?? 0;
   const revenue = course.price * enrollments;
@@ -144,7 +145,7 @@ function CourseRow({ course, onDelete }: { course: Course; onDelete: (id: string
           </div>
         </div>
       </td>
-      <td className="px-6 py-4"><StatusBadge published={course.isPublished} /></td>
+      <td className="px-6 py-4"><StatusBadge status={course.status} /></td>
       <td className="px-6 py-4 text-sm font-bold text-slate-700 tabular-nums">
         {enrollments.toLocaleString()}
       </td>
@@ -167,7 +168,7 @@ function CourseRow({ course, onDelete }: { course: Course; onDelete: (id: string
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Main
 export default function CourseList() {
   const { data: session } = useSession();
   const dispatch = useAppDispatch();
@@ -185,8 +186,8 @@ export default function CourseList() {
 
   const filtered = myCourses
     .filter((c) => {
-      if (filter === 'published') return c.isPublished;
-      if (filter === 'draft') return !c.isPublished;
+      if (filter === 'published') return c.status === 'PUBLISHED';
+      if (filter === 'draft') return c.status === 'DRAFT';
       return true;
     })
     .filter((c) => c.title.toLowerCase().includes(search.toLowerCase()));
@@ -256,8 +257,8 @@ export default function CourseList() {
       {!loading && myCourses.length > 0 && (
         <div className="flex gap-6 text-xs font-bold text-slate-500">
           <span>{myCourses.length} total</span>
-          <span className="text-emerald-600">{myCourses.filter(c => c.isPublished).length} published</span>
-          <span className="text-slate-400">{myCourses.filter(c => !c.isPublished).length} drafts</span>
+          <span className="text-emerald-600">{myCourses.filter(c => c.status === 'PUBLISHED').length} published</span>
+          <span className="text-slate-400">{myCourses.filter(c => c.status === 'DRAFT').length} drafts</span>
         </div>
       )}
 

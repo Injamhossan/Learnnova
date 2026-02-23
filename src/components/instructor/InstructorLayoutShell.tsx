@@ -20,18 +20,15 @@ export default function InstructorLayoutShell({ children }: { children: React.Re
 
       {/* Sidebar — hidden off-screen on mobile, shown when mobileOpen */}
       <div className={`
-        fixed top-0 left-0 h-full z-30 transition-transform duration-300
+        fixed inset-y-0 left-0 z-30 transition-transform duration-300
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:static lg:z-auto
+        lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:z-auto
       `}>
         <InstructorSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       </div>
 
       {/* Main content */}
-      <main className={`
-        flex-1 flex flex-col min-h-screen overflow-hidden transition-all duration-300
-        lg:${collapsed ? 'ml-[68px]' : 'ml-[240px]'}
-      `}>
+      <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
         {/* Mobile topbar */}
         <div className="flex items-center gap-3 px-4 h-14 border-b border-slate-200 bg-white lg:hidden shrink-0">
           <button

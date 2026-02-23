@@ -297,7 +297,7 @@ export default function CourseEditPage() {
       });
       setSections(c.sections ?? []);
     }
-    adminApi.getCategories(token).then(setCategories).catch(() => {});
+    courseApi.getCategories().then(setCategories).catch(() => {});
   }, [token, courseId, dispatch, reset]);
 
   useEffect(() => { load(); }, [load]);
@@ -318,11 +318,12 @@ export default function CourseEditPage() {
   const togglePublish = async () => {
     if (!token || !courseId || !course) return;
     setPublishLoading(true);
-    const result = await dispatch(publishCourse({ token, id: courseId, isPublished: !course.isPublished }));
+    const newStatus = course.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
+    const result = await dispatch(publishCourse({ token, id: courseId, status: newStatus as any }));
     if (publishCourse.fulfilled.match(result)) {
       dispatch(addToast(toast.success(
-        result.payload.isPublished ? 'Course published!' : 'Course unpublished',
-        result.payload.isPublished ? 'Students can now discover your course.' : 'Course moved to draft.'
+        result.payload.status === 'PUBLISHED' ? 'Course published!' : 'Course unpublished',
+        result.payload.status === 'PUBLISHED' ? 'Students can now discover your course.' : 'Course moved to draft.'
       )));
     } else {
       dispatch(addToast(toast.error('Failed to change status', result.payload as string)));
@@ -361,7 +362,7 @@ export default function CourseEditPage() {
     <>
       <InstructorHeader
         title={course?.title ?? 'Edit Course'}
-        subtitle={course?.isPublished ? 'Published · live' : 'Draft · not visible to students'}
+        subtitle={course?.status === 'PUBLISHED' ? 'Published · live' : `${course?.status ?? 'Draft'} · not visible to students`}
         actions={
           <div className="flex items-center gap-2">
             <Link href="/instructor/courses"
@@ -373,13 +374,13 @@ export default function CourseEditPage() {
               disabled={publishLoading || updating}
               className={cn(
                 'flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all active:scale-95 shadow-sm disabled:opacity-60',
-                course?.isPublished
+                course?.status === 'PUBLISHED'
                   ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   : 'bg-amber-500 text-white hover:bg-amber-400 shadow-amber-500/30'
               )}
             >
-              {publishLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : course?.isPublished ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
-              {course?.isPublished ? 'Unpublish' : 'Publish'}
+              {publishLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : course?.status === 'PUBLISHED' ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
+              {course?.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
             </button>
           </div>
         }
@@ -510,20 +511,20 @@ export default function CourseEditPage() {
             {/* Status card */}
             <div className={cn(
               'rounded-2xl border p-4',
-              course?.isPublished
+              course?.status === 'PUBLISHED'
                 ? 'bg-emerald-50 border-emerald-200'
                 : 'bg-slate-50 border-slate-200'
             )}>
               <div className="flex items-center gap-2 mb-2">
-                {course?.isPublished
+                {course?.status === 'PUBLISHED'
                   ? <Globe className="w-4 h-4 text-emerald-600" />
                   : <Lock className="w-4 h-4 text-slate-500" />}
                 <p className="text-sm font-bold text-slate-800">
-                  {course?.isPublished ? 'Live to Students' : 'Draft — Not Visible'}
+                  {course?.status === 'PUBLISHED' ? 'Live to Students' : 'Draft — Not Visible'}
                 </p>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed">
-                {course?.isPublished
+                {course?.status === 'PUBLISHED'
                   ? 'Your course is publicly visible. Students can find and enroll.'
                   : 'Your course is in draft mode. Click Publish when you\'re ready to go live.'}
               </p>

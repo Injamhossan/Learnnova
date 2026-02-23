@@ -92,10 +92,11 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           const data = await res.json();
           console.log(`Social sync successful, assigned role: ${data.role}`);
           
-          // Attach backend data to the user object so it's available in the jwt callback
+          // Attach backend data to the user object
           (user as any).id = data.id;
           (user as any).role = data.role;
           (user as any).token = data.token;
+          (user as any).needsRole = data.needsRole; // New flag
           
           return true;
         } catch (error: any) {
@@ -110,14 +111,21 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         token.id = user.id;
         token.role = (user as any).role;
         token.backendToken = (user as any).token;
+        token.needsRole = (user as any).needsRole;
+      }
+      // Handle manual updates to the session (like when role is picked)
+      if (trigger === "update" && session?.role) {
+        token.role = session.role;
+        token.needsRole = false;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
-        (session.user as any).backendToken = token.backendToken;
+        (session.user as any).role = token.role as string;
+        (session.user as any).backendToken = token.backendToken as string;
+        (session.user as any).needsRole = token.needsRole as boolean;
       }
       return session;
     },

@@ -33,7 +33,7 @@ const navItems = [
   {
     label: 'SYSTEM',
     items: [
-      { href: '/admin/settings', label: 'Settings', icon: Settings, superAdminOnly: true },
+      { href: '/admin/settings', label: 'Settings', icon: Settings },
     ],
   },
 ];

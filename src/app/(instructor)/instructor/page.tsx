@@ -11,7 +11,7 @@ import InstructorHeader from '@/components/instructor/InstructorHeader';
 import { courseApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Types 
 interface Stats {
   totalCourses: number;
   totalStudents: number;
@@ -23,7 +23,7 @@ interface Stats {
   }[];
 }
 
-// ── Stat Card ─────────────────────────────────────────────────────────────────
+// ── Stat Card
 function StatCard({
   label, value, icon: Icon, accent, prefix = '', suffix = '',
 }: {
@@ -50,12 +50,12 @@ function StatCard({
   );
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+// ── Skeleton 
 function Skeleton({ className }: { className?: string }) {
   return <div className={cn('bg-slate-100 rounded-xl animate-pulse', className)} />;
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Main
 export default function InstructorDashboardPage() {
   const { data: session } = useSession();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -81,7 +81,7 @@ export default function InstructorDashboardPage() {
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
-  const avgRating = 4.8; // TODO: derive from real ratings once available
+  const avgRating = 4.8;
 
   return (
     <>
@@ -116,33 +116,33 @@ export default function InstructorDashboardPage() {
           </div>
         )}
 
-        {/* ── Quick Actions + Recent Enrollments ───────────────────────── */}
+        {/* ── Quick Actions + Recent Enrollments  */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* CTA Card */}
-          <div className="bg-gradient-to-br from-[#0f0f14] to-[#1a1a2e] rounded-2xl p-6 text-white relative overflow-hidden flex flex-col">
-            <div className="absolute inset-0 opacity-10"
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 relative overflow-hidden flex flex-col group hover:shadow-lg hover:shadow-slate-200/60 transition-all duration-300">
+            <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity"
               style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #f59e0b 0%, transparent 60%)' }} />
             <div className="relative z-10 flex-1">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center mb-4">
-                <BookOpen className="w-5 h-5 text-amber-400" />
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-4">
+                <BookOpen className="w-5 h-5 text-amber-600" />
               </div>
-              <h3 className="text-lg font-bold mb-1">Share Your Knowledge</h3>
-              <p className="text-white/50 text-sm leading-relaxed mb-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-1">Share Your Knowledge</h3>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6 font-medium">
                 Create a new course and start reaching thousands of learners.
               </p>
               <Link
                 href="/instructor/courses/create"
-                className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/30"
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-slate-200"
               >
                 <Plus className="w-3.5 h-3.5" /> Create Course
               </Link>
             </div>
             <div className="flex gap-3 mt-6 relative z-10">
-              <Link href="/instructor/courses" className="flex-1 text-center bg-white/8 hover:bg-white/12 border border-white/10 text-white/70 text-xs font-bold py-2.5 rounded-xl transition-all">
+              <Link href="/instructor/courses" className="flex-1 text-center bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl transition-all">
                 My Courses
               </Link>
-              <Link href="/instructor/analytics" className="flex-1 text-center bg-white/8 hover:bg-white/12 border border-white/10 text-white/70 text-xs font-bold py-2.5 rounded-xl transition-all">
+              <Link href="/instructor/analytics" className="flex-1 text-center bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold py-2.5 rounded-xl transition-all">
                 Analytics
               </Link>
             </div>
@@ -199,7 +199,7 @@ export default function InstructorDashboardPage() {
           </div>
         </div>
 
-        {/* ── Permissions info box ─────────────────────────────────────── */}
+        {/* ── Permissions info box  */}
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
           <div className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0">
             <Eye className="w-4.5 h-4.5 text-amber-600 w-5 h-5" />

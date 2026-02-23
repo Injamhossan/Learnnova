@@ -172,7 +172,9 @@ export default function UsersTable() {
       {/* Page header with actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
          <div className="flex flex-wrap gap-2">
-            {roleFilters.map((r) => (
+            {roleFilters
+              .filter(r => isSuperAdmin || r !== 'SUPER_ADMIN')
+              .map((r) => (
               <button
                 key={r}
                 onClick={() => { setFilter(r); setPage(1); }}

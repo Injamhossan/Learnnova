@@ -8,6 +8,7 @@ import NavLogo from '@/assets/NavLogo.png';
 import { cn } from '@/lib/utils';
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import UserAvatar from '@/components/common/UserAvatar';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -87,15 +88,13 @@ export default function Navbar() {
                 <div className="relative">
                   <button 
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="w-10 h-10 rounded-full border-2 border-slate-200 overflow-hidden hover:border-yellow-500 transition-colors bg-slate-50 flex items-center justify-center group"
+                    className="group"
                   >
-                    {session.user?.image ? (
-                        <img src={session.user.image} alt="User" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-100 uppercase font-bold text-slate-500 text-xs">
-                          {session.user?.name?.charAt(0) || <User className="w-4 h-4" />}
-                        </div>
-                    )}
+                    <UserAvatar 
+                      src={session.user?.image} 
+                      name={session.user?.name} 
+                      className="rounded-full border-2 border-slate-200 group-hover:border-yellow-500 transition-colors"
+                    />
                   </button>
 
                   {profileOpen && (

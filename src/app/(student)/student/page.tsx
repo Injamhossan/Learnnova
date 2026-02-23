@@ -30,6 +30,8 @@ interface Stats {
   certificates: number;
   totalHours: number;
   streak: number;
+  lessonsThisWeek: number;
+  weeklyGoal: number;
 }
 
 function Skeleton({ className }: { className?: string }) {
@@ -72,7 +74,15 @@ export default function StudentDashboardPage() {
   const token = user?.backendToken as string | undefined;
 
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-  const [stats, setStats] = useState<Stats>({ inProgress: 0, completed: 0, certificates: 0, totalHours: 0, streak: 0 });
+  const [stats, setStats] = useState<Stats>({ 
+    inProgress: 0, 
+    completed: 0, 
+    certificates: 0, 
+    totalHours: 0, 
+    streak: 0,
+    lessonsThisWeek: 0,
+    weeklyGoal: 5 
+  });
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
@@ -80,16 +90,18 @@ export default function StudentDashboardPage() {
     if (!token) return;
     setLoading(true);
     try {
-      // Fetch student's enrollments
-      const data = await courseApi.getMyEnrollments(token);
-      const list: Enrollment[] = data?.enrollments ?? data ?? [];
+      // Fetch student's enrollments and stats
+      const [enrollData, statsData] = await Promise.all([
+        courseApi.getMyEnrollments(token),
+        courseApi.getDashboardStats(token)
+      ]);
+
+      const list: Enrollment[] = enrollData?.enrollments ?? enrollData ?? [];
       setEnrollments(list);
+      
       setStats({
-        inProgress:   list.filter(e => !e.isCompleted && e.progressPercentage > 0).length,
-        completed:    list.filter(e => e.isCompleted).length,
-        certificates: list.filter(e => e.isCompleted).length, // 1:1 for now
-        totalHours:   Math.round(list.reduce((a, e) => a + (e.course.durationMinutes ?? 0), 0) / 60),
-        streak:       3, // placeholder — would require a separate tracker
+        ...statsData,
+        totalHours: Math.round(list.reduce((a, e) => a + (e.course.durationMinutes ?? 0), 0) / 60),
       });
     } catch {
       // silently fail — empty state handled below
@@ -148,8 +160,12 @@ export default function StudentDashboardPage() {
                 <Flame className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-white font-bold text-lg">3 Day Streak 🔥</p>
-                <p className="text-white/70 text-xs font-medium">Keep it up! Learn something today to maintain your streak.</p>
+                <p className="text-white font-bold text-lg">{stats.streak} Day Streak 🔥</p>
+                <p className="text-white/70 text-xs font-medium">
+                  {stats.streak > 0 
+                    ? 'Great progress! Keep learning to increase your streak.' 
+                    : 'Start learning today to begin your streak!'}
+                </p>
               </div>
             </div>
             <Link href="/student/courses"
@@ -238,14 +254,18 @@ export default function StudentDashboardPage() {
                     <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                       fill="none" stroke="#f1f5f9" strokeWidth="3" />
                     <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="60, 100" strokeLinecap="round" />
+                      fill="none" stroke="#3b82f6" strokeWidth="3" 
+                      strokeDasharray={`${(stats.lessonsThisWeek / stats.weeklyGoal) * 100}, 100`} 
+                      strokeLinecap="round" />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-bold text-slate-900">60%</span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {Math.round((stats.lessonsThisWeek / stats.weeklyGoal) * 100)}%
+                    </span>
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-slate-700">3 of 5 lessons</p>
-                <p className="text-xs text-slate-400 mt-0.5">Goal: 5 lessons/week</p>
+                <p className="text-sm font-semibold text-slate-700">{stats.lessonsThisWeek} of {stats.weeklyGoal} lessons</p>
+                <p className="text-xs text-slate-400 mt-0.5">Goal: {stats.weeklyGoal} lessons/week</p>
               </div>
             </div>
 

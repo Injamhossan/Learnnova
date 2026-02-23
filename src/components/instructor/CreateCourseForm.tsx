@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { createCourse } from '@/store/coursesSlice';
 import { addToast, toast } from '@/store/uiSlice';
-import { adminApi } from '@/lib/api';
+import { adminApi, courseApi } from '@/lib/api';
 import { courseBasicSchema, courseThumbnailSchema } from '@/lib/schemas';
 import { cn } from '@/lib/utils';
 
@@ -133,14 +133,13 @@ export default function CreateCourseForm() {
 
   const token = (session?.user as any)?.backendToken as string | undefined;
 
-  // Fetch categories (real API)
+  // Fetch categories (public API accessible to instructors)
   useEffect(() => {
-    if (!token) return;
-    adminApi.getCategories(token)
+    courseApi.getCategories()
       .then((cats) => setCategories(cats))
       .catch(() => dispatch(addToast(toast.error('Could not load categories'))))
       .finally(() => setCatLoading(false));
-  }, [token, dispatch]);
+  }, [dispatch]);
 
   // ── Step 1 form ────────────────────────────────────────────────────────────
   // We use the schema without .transform so RHF can work with the string price

@@ -1,85 +1,53 @@
-import { Search, Filter, BookOpen, Clock, Star, ArrowRight } from "lucide-react";
+'use client';
+
+import { Search, Filter, BookOpen, Clock, Star, ArrowRight, Loader2, PlayCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { fetchPublicCourses } from "@/store/coursesSlice";
+import Skeleton from "@/components/common/Skeleton";
 
-const courses = [
-  {
-    id: 1,
-    title: "Complete Web Development Bootcamp",
-    instructor: "Sarah Johnson",
-    rating: 4.9,
-    students: 15400,
-    duration: "24h 15m",
-    price: "$89",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600",
-    category: "Development",
-    level: "All Levels"
-  },
-  {
-    id: 2,
-    title: "UI/UX Design Masterclass",
-    instructor: "Michael Chen",
-    rating: 4.8,
-    students: 8200,
-    duration: "18h 30m",
-    price: "$75",
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600",
-    category: "Design",
-    level: "Intermediate"
-  },
-  {
-    id: 3,
-    title: "Data Science & Machine Learning",
-    instructor: "Dr. Emily Davis",
-    rating: 4.9,
-    students: 12100,
-    duration: "32h 45m",
-    price: "$95",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600",
-    category: "Data Science",
-    level: "Advanced"
-  },
-  {
-    id: 4,
-    title: "Digital Marketing Strategy",
-    instructor: "Alex Turner",
-    rating: 4.7,
-    students: 6500,
-    duration: "12h 20m",
-    price: "$65",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    category: "Marketing",
-    level: "Beginner"
-  },
-  {
-    id: 5,
-    title: "Mobile App Development with React Native",
-    instructor: "David Wilson",
-    rating: 4.8,
-    students: 9300,
-    duration: "20h 10m",
-    price: "$85",
-    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=600",
-    category: "Development",
-    level: "Intermediate"
-  },
-  {
-    id: 6,
-    title: "Financial Analysis & Investment",
-    instructor: "Robert Brown",
-    rating: 4.9,
-    students: 5400,
-    duration: "15h 45m",
-    price: "$99",
-    image: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&q=80&w=600",
-    category: "Finance",
-    level: "Advanced"
-  }
-];
+const PAGE_CATEGORIES = ["All", "Development", "Design", "Business", "Marketing", "Data Science", "Finance"];
 
-const categories = ["All", "Development", "Design", "Business", "Marketing", "Data Science", "Finance"];
+function CourseSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl overflow-hidden border border-slate-200">
+      <Skeleton className="aspect-video w-full" />
+      <div className="p-6 space-y-4">
+        <div className="flex items-center gap-2">
+           <Skeleton className="w-24 h-3" />
+           <Skeleton className="w-10 h-3" />
+        </div>
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="h-4 w-1/2" />
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-6 w-12" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CoursesPage() {
+  const dispatch = useAppDispatch();
+  const { publicCourses: response, loading } = useAppSelector(s => s.courses);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCat, setSelectedCat] = useState("All");
+
+  useEffect(() => {
+    dispatch(fetchPublicCourses());
+  }, [dispatch]);
+
+  const allCourses = (response as any)?.courses || [];
+  
+  const filtered = allCourses.filter((c: any) => {
+    const matchesSearch = c.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCat = selectedCat === "All" || c.category?.name === selectedCat;
+    return matchesSearch && matchesCat;
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 pt-32 pb-12">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -100,7 +68,9 @@ export default function CoursesPage() {
                 <input 
                     type="text" 
                     placeholder="Search courses..." 
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:border-yellow-400 transition-all font-manrope text-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-all font-manrope text-sm"
                 />
             </div>
 
@@ -111,10 +81,11 @@ export default function CoursesPage() {
                     Filters
                  </button>
                  <div className="h-8 w-px bg-slate-200 mx-1 shrink-0 hidden md:block" />
-                 {categories.map((cat, idx) => (
+                 {PAGE_CATEGORIES.map((cat) => (
                     <button 
                         key={cat}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${idx === 0 ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        onClick={() => setSelectedCat(cat)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedCat === cat ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                     >
                         {cat}
                     </button>
@@ -123,65 +94,115 @@ export default function CoursesPage() {
         </div>
 
         {/* Course Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {courses.map((course) => (
-                <div key={course.id} className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-xl hover:border-yellow-400/50 transition-all duration-300 flex flex-col">
-                    {/* Image */}
-                    <div className="relative aspect-video overflow-hidden">
-                        <Image 
-                            src={course.image} 
-                            alt={course.title} 
-                            fill 
-                            className="object-cover transition-transform duration-500 group-hover:scale-105" 
-                        />
-                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-900 shadow-sm">
-                            {course.category}
-                        </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-6 flex flex-col flex-grow">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="flex text-yellow-500">
-                                {[...Array(5)].map((_, i) => (
-                                    <Star key={i} className={`w-3.5 h-3.5 ${i < Math.floor(course.rating) ? 'fill-current' : 'text-slate-300'}`} />
-                                ))}
+        {loading && filtered.length === 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => <CourseSkeleton key={i} />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+            <BookOpen className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-slate-900">No courses found</h3>
+            <p className="text-slate-500 mt-2">Try adjusting your filters or search terms.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filtered.map((course: any) => (
+                  <Link href={`/courses/${course.slug || course.id}`} key={course.id} className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-xl hover:border-amber-400/50 transition-all duration-300 flex flex-col">
+                      {/* Image */}
+                      <div className="relative aspect-video overflow-hidden bg-slate-100">
+                          {course.thumbnailUrl ? (
+                            <Image 
+                                src={course.thumbnailUrl} 
+                                alt={course.title} 
+                                fill 
+                                className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <BookOpen className="w-12 h-12 text-slate-200" />
                             </div>
-                            <span className="text-xs text-slate-500 font-medium">({course.rating} / 5.0)</span>
-                        </div>
-
-                        <h3 className="text-xl font-bold text-slate-900 font-satoshi mb-2 group-hover:text-yellow-600 transition-colors line-clamp-2">
-                            {course.title}
-                        </h3>
-                        <p className="text-sm text-slate-500 font-manrope mb-4">By <span className="text-slate-900 font-medium">{course.instructor}</span></p>
-
-                        <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                             <div className="flex items-center gap-4 text-xs text-slate-500 font-medium font-manrope">
-                                <div className="flex items-center gap-1">
-                                    <BookOpen className="w-4 h-4" />
-                                    <span>{course.students.toLocaleString()} Students</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4" />
-                                    <span>{course.duration}</span>
-                                </div>
+                          )}
+                          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-slate-900 shadow-sm uppercase tracking-wider">
+                              {course.category?.name || 'Uncategorized'}
+                          </div>
+                          {course.level && (
+                             <div className="absolute bottom-3 left-3 bg-slate-900/40 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase">
+                                {course.level}
                              </div>
-                             <div className="text-lg font-bold text-slate-900 font-satoshi">{course.price}</div>
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
+                          )}
+                      </div>
 
-        {/* Pagination / Load More */}
-        <div className="mt-16 text-center">
-            <button className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 py-3 text-sm font-medium text-slate-900 shadow-sm hover:bg-slate-50 transition-colors font-satoshi">
-                Load More Courses
-                <ArrowRight className="w-4 h-4" />
-            </button>
-        </div>
+                      {/* Content */}
+                      <div className="p-6 flex flex-col flex-grow">
+                          <div className="flex items-center gap-2 mb-3">
+                              <div className="flex text-amber-500">
+                                  {[...Array(5)].map((_, i) => (
+                                      <Star key={i} className={`w-3 h-3 ${i < Math.floor(course.averageRating || 0) ? 'fill-current' : 'text-slate-200'}`} />
+                                  ))}
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-bold">({course.averageRating || 0})</span>
+                          </div>
+
+                          <h3 className="text-lg font-bold text-slate-900 font-satoshi mb-2 group-hover:text-amber-600 transition-colors line-clamp-2">
+                              {course.title}
+                          </h3>
+                          <p className="text-xs text-slate-500 font-manrope mb-4">By <span className="text-slate-900 font-bold">{course.instructor?.user?.fullName || 'Instructor'}</span></p>
+
+                          <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+                               <div className="flex items-center gap-3 text-[10px] text-slate-500 font-bold font-manrope uppercase tracking-tight">
+                                  <div className="flex items-center gap-1">
+                                      <Users className="w-3.5 h-3.5 text-blue-500" />
+                                      <span>{(course.totalEnrollments || 0).toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                      <PlayCircle className="w-3.5 h-3.5 text-amber-500" />
+                                      <span>Videos</span>
+                                  </div>
+                               </div>
+                               <div className="text-base font-bold text-slate-900 font-satoshi">
+                                 {course.price === 0 ? 'Free' : `$${course.price}`}
+                               </div>
+                          </div>
+                      </div>
+                  </Link>
+              ))}
+          </div>
+        )}
+
+        {/* Pagination / Load More (Placeholder) */}
+        {!loading && filtered.length > 0 && (
+          <div className="mt-16 text-center">
+              <button className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-900 shadow-sm hover:bg-slate-50 transition-colors font-satoshi">
+                  Load More Courses
+                  <ArrowRight className="w-4 h-4" />
+              </button>
+          </div>
+        )}
 
       </div>
     </div>
+  );
+}
+
+// Re-defining Users icon which was missing in imports
+function Users({ className }: { className?: string }) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
   );
 }

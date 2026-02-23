@@ -139,6 +139,12 @@ export const courseApi = {
 
   getMyCertificates: (token: string) =>
     request<any>('/api/students/certificates', { token }),
+
+  getDashboardStats: (token: string) =>
+    request<any>('/api/students/stats', { token }),
+
+  getCategories: () =>
+    request<any[]>('/api/courses/categories'),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
