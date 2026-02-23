@@ -1,14 +1,16 @@
 'use client';
 
+import React from 'react';
 import { useSession } from 'next-auth/react';
 import { Bell, Search } from 'lucide-react';
 
 interface AdminHeaderProps {
   title: string;
   subtitle?: string;
+  actions?: React.ReactNode;
 }
 
-export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
+export default function AdminHeader({ title, subtitle, actions }: AdminHeaderProps) {
   const { data: session } = useSession();
   const name = session?.user?.name || 'Admin';
   const initials = name
@@ -21,10 +23,13 @@ export default function AdminHeader({ title, subtitle }: AdminHeaderProps) {
 
   return (
     <header className="h-20 border-b border-slate-100 flex items-center justify-between px-10 bg-white/80 backdrop-blur-md shrink-0 sticky top-0 z-20">
-      {/* Left: Title */}
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 leading-tight italic">{title}</h1>
-        {subtitle && <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">{subtitle}</p>}
+      {/* Left: Title + optional actions */}
+      <div className="flex items-center gap-4 min-w-0">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-slate-900 leading-tight italic truncate">{title}</h1>
+          {subtitle && <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">{subtitle}</p>}
+        </div>
+        {actions && <div className="shrink-0">{actions}</div>}
       </div>
 
       {/* Right: Search + Notifs + Avatar */}
