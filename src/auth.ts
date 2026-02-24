@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
+import GitHub from 'next-auth/providers/github';
 import { authConfig } from './auth.config';
 import { z } from 'zod';
 
@@ -10,6 +11,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
     }),
     Credentials({
       name: 'Credentials',
@@ -74,6 +79,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         console.log(`Syncing social login for ${user.email} with backend...`);
         
         try {
+          console.log('Sending social login data to backend...', { email: user.email, fullName: user.name });
           const res = await fetch(`${apiUrl}/api/auth/social-login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -85,7 +91,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           });
 
           if (!res.ok) {
-            console.error('Failed to sync social login with backend');
+            const errorBody = await res.text();
+            console.error('Failed to sync social login with backend:', res.status, errorBody);
             return false;
           }
 
@@ -100,7 +107,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           
           return true;
         } catch (error: any) {
-          console.error('Error during social login sync:', error.message);
+          console.error('Error during social login sync (Fetch Error):', error.message);
           return false;
         }
       }
@@ -112,8 +119,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         token.role = (user as any).role;
         token.backendToken = (user as any).token;
         token.needsRole = (user as any).needsRole;
+        token.picture = user.image;
       }
-      // Handle manual updates to the session (like when role is picked)
+      // Handle manual updates to the session
       if (trigger === "update" && session?.role) {
         token.role = session.role;
         token.needsRole = false;
@@ -126,6 +134,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         (session.user as any).role = token.role as string;
         (session.user as any).backendToken = token.backendToken as string;
         (session.user as any).needsRole = token.needsRole as boolean;
+        session.user.image = token.picture as string;
       }
       return session;
     },

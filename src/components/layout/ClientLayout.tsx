@@ -1,9 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import RoleSelectionModal from "@/components/auth/RoleSelectionModal";
+
+const RoleSelectionModal = dynamic(() => import("@/components/auth/RoleSelectionModal"), { ssr: false });
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

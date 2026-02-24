@@ -1,12 +1,13 @@
 'use client';
 
-import { Search, Filter, BookOpen, Clock, Star, ArrowRight, Loader2, PlayCircle } from "lucide-react";
+import { Search, Filter, BookOpen, Clock, Star, ArrowRight, Loader2, PlayCircle, ChevronDown, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { fetchPublicCourses } from "@/store/coursesSlice";
 import Skeleton from "@/components/common/Skeleton";
+import { cn } from "@/lib/utils";
 
 const PAGE_CATEGORIES = ["All", "Development", "Design", "Business", "Marketing", "Data Science", "Finance"];
 
@@ -37,8 +38,19 @@ export default function CoursesPage() {
   const [selectedCat, setSelectedCat] = useState("All");
 
   useEffect(() => {
-    dispatch(fetchPublicCourses());
+    dispatch(fetchPublicCourses({ limit: 6 }));
   }, [dispatch]);
+
+  const loadMore = () => {
+    if ((response as any)?.nextCursor) {
+      dispatch(fetchPublicCourses({ 
+        limit: 6, 
+        cursor: (response as any).nextCursor,
+        search: searchTerm,
+        category: selectedCat === 'All' ? undefined : selectedCat
+      }));
+    }
+  };
 
   const allCourses = (response as any)?.courses || [];
   
@@ -60,36 +72,57 @@ export default function CoursesPage() {
             </p>
         </div>
 
-        {/* Search and Filter */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-            {/* Search */}
-            <div className="relative w-full md:w-96">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input 
-                    type="text" 
-                    placeholder="Search courses..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-all font-manrope text-sm"
-                />
-            </div>
-
-            {/* Categories & Filter */}
-            <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-                 <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors shrink-0">
-                    <Filter className="h-4 w-4" />
-                    Filters
-                 </button>
-                 <div className="h-8 w-px bg-slate-200 mx-1 shrink-0 hidden md:block" />
-                 {PAGE_CATEGORIES.map((cat) => (
-                    <button 
-                        key={cat}
-                        onClick={() => setSelectedCat(cat)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${selectedCat === cat ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+        {/* Search and Filters Section */}
+        <div className="mb-12">
+            <div className="flex flex-col lg:flex-row items-stretch gap-4">
+                {/* Main Search */}
+                <div className="relative flex-1 group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-slate-400 group-focus-within:text-amber-500 transition-colors" />
+                    </div>
+                    <input 
+                        type="search" 
+                        placeholder="What do you want to learn today?" 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="block w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-amber-400/10 focus:border-amber-400 transition-all font-manrope font-medium shadow-inner hover:border-slate-300"
+                    />
+                </div>
+                
+                {/* Category Dropdown */}
+                <div className="relative w-full lg:w-72">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Filter className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <select 
+                        value={selectedCat}
+                        onChange={(e) => setSelectedCat(e.target.value)}
+                        className="block w-full pl-10 pr-10 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-manrope font-bold text-sm shadow-sm focus:outline-none focus:ring-4 focus:ring-amber-400/10 focus:border-amber-400 cursor-pointer appearance-none transition-all hover:border-slate-300"
                     >
-                        {cat}
+                        <option value="All">All Categories</option>
+                        {PAGE_CATEGORIES.filter(c => c !== "All").map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                    </div>
+                </div>
+
+                {/* Clear Filters (Dynamic) */}
+                {(searchTerm || selectedCat !== "All") && (
+                    <button 
+                        onClick={() => { setSearchTerm(""); setSelectedCat("All"); }}
+                        className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all font-bold text-sm font-satoshi shrink-0"
+                    >
+                        <X className="h-4 w-4" />
+                        Clear
                     </button>
-                 ))}
+                )}
+
+                <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 font-bold text-sm shrink-0 font-satoshi active:scale-95">
+                    Search
+                </button>
             </div>
         </div>
 
@@ -169,11 +202,15 @@ export default function CoursesPage() {
           </div>
         )}
 
-        {/* Pagination / Load More (Placeholder) */}
-        {!loading && filtered.length > 0 && (
+        {/* Pagination / Load More */}
+        {(response as any)?.nextCursor && (
           <div className="mt-16 text-center">
-              <button className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-900 shadow-sm hover:bg-slate-50 transition-colors font-satoshi">
-                  Load More Courses
+              <button 
+                onClick={loadMore}
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 py-3 text-sm font-bold text-slate-900 shadow-sm hover:bg-slate-50 transition-colors font-satoshi disabled:opacity-50"
+              >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Load More Courses'}
                   <ArrowRight className="w-4 h-4" />
               </button>
           </div>

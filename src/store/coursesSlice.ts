@@ -59,9 +59,9 @@ export const fetchMyCourses = createAsyncThunk(
 
 export const fetchPublicCourses = createAsyncThunk(
   'courses/fetchPublicCourses',
-  async (_, { rejectWithValue }) => {
+  async (params: { limit?: number; search?: string; category?: string; sort?: string; cursor?: string } | undefined, { rejectWithValue }) => {
     try {
-      return await courseApi.getPublic();
+      return await courseApi.getPublic(params);
     } catch (e: any) {
       return rejectWithValue(e.message);
     }
@@ -154,7 +154,17 @@ const coursesSlice = createSlice({
     // fetchPublicCourses
     builder
       .addCase(fetchPublicCourses.pending, (state) => { state.loading = true; })
-      .addCase(fetchPublicCourses.fulfilled, (state, action) => { state.loading = false; state.publicCourses = action.payload; })
+      .addCase(fetchPublicCourses.fulfilled, (state, action) => {
+        state.loading = false;
+        const newCourses = (action.payload as any)?.courses || action.payload;
+        const isAppending = action.meta.arg?.cursor !== undefined;
+        
+        if (isAppending) {
+          state.publicCourses = [...state.publicCourses, ...newCourses];
+        } else {
+          state.publicCourses = action.payload; // Keep full response for nextCursor access in component
+        }
+      })
       .addCase(fetchPublicCourses.rejected, (state, action) => { state.loading = false; state.error = action.payload as string; });
 
     // createCourse

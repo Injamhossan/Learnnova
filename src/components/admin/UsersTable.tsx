@@ -302,16 +302,16 @@ export default function UsersTable() {
                           {user.isActive ? 'ACTIVE' : 'SUSPENDED'}
                         </button>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-8 py-5 text-slate-500 text-xs font-bold tabular-nums">
                         {user.isEmailVerified ? (
-                          <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs">
-                             <UserCheck className="w-4 h-4" />
-                             VERIFIED
+                          <div className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full border border-blue-100 shadow-sm w-fit">
+                             <ShieldCheck className="w-4 h-4" />
+                             <span className="text-[10px] uppercase font-black tracking-tighter">Verified</span>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 text-slate-400 font-bold text-xs italic">
+                          <div className="flex items-center gap-1.5 bg-slate-50 text-slate-400 px-3 py-1.5 rounded-full border border-slate-100 italic w-fit">
                              <UserX className="w-4 h-4" />
-                             PENDING
+                             <span className="text-[10px] uppercase font-bold tracking-tighter">Pending</span>
                           </div>
                         )}
                       </td>

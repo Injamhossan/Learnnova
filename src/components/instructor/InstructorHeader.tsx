@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { Bell } from 'lucide-react';
+import UserAvatar from '@/components/common/UserAvatar';
 
 interface InstructorHeaderProps {
   title: string;
@@ -30,9 +31,13 @@ export default function InstructorHeader({ title, subtitle, actions }: Instructo
           <Bell className="w-4 h-4" />
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-amber-500 rounded-full" />
         </button>
-        <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-200 flex items-center justify-center text-amber-700 font-bold text-sm">
-          {user?.name?.charAt(0).toUpperCase() || 'I'}
-        </div>
+        <UserAvatar 
+          src={user?.image} 
+          name={user?.name} 
+          size={36} 
+          className="rounded-xl border border-amber-200 shadow-sm"
+          fallbackClassName="bg-amber-500/10 text-amber-700"
+        />
       </div>
     </header>
   );

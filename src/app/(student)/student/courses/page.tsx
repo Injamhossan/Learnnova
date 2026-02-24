@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 interface Enrollment {
   id: string;
   progressPercentage: number;
-  isCompleted: boolean;
+  status: 'ACTIVE' | 'COMPLETED' | 'DROPPED';
   enrolledAt: string;
   course: {
     id: string; title: string; thumbnailUrl?: string; level: string;
@@ -56,8 +56,9 @@ export default function StudentCoursesPage() {
 
   const filtered = enrollments
     .filter(e => {
-      if (filter === 'in-progress') return !e.isCompleted;
-      if (filter === 'completed') return e.isCompleted;
+      if (e.status === 'DROPPED') return false;
+      if (filter === 'in-progress') return e.status === 'ACTIVE';
+      if (filter === 'completed') return e.status === 'COMPLETED';
       return true;
     })
     .filter(e => e.course.title.toLowerCase().includes(search.toLowerCase()));
@@ -126,7 +127,7 @@ export default function StudentCoursesPage() {
                       <BookOpen className="w-10 h-10 text-slate-300" />
                     </div>
                   )}
-                  {e.isCompleted && (
+                  {e.status === 'COMPLETED' && (
                     <div className="absolute inset-0 bg-emerald-900/40 flex items-center justify-center">
                       <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center">
                         <Check className="w-6 h-6 text-white" />
@@ -147,18 +148,31 @@ export default function StudentCoursesPage() {
 
                   <div className="mt-auto pt-3 border-t border-slate-50 space-y-2">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-500">
-                      <span>{e.isCompleted ? '✅ Completed' : `${e.progressPercentage}% complete`}</span>
+                      <span>{e.status === 'COMPLETED' ? '✅ Completed' : `${e.progressPercentage}% complete`}</span>
                       <div className="flex items-center gap-1 text-amber-500">
                         <Star className="w-3 h-3 fill-amber-400" />
                         {e.course.averageRating.toFixed(1)}
                       </div>
                     </div>
                     <ProgressBar v={e.progressPercentage} />
-                    <Link href={`/courses/${e.course.id}`}
-                      className="mt-2 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 rounded-xl transition-all active:scale-95">
-                      <Play className="w-3.5 h-3.5 fill-white" />
-                      {e.isCompleted ? 'Review Course' : 'Continue Learning'}
-                    </Link>
+                    <div className="flex items-center gap-2 mt-2">
+                        <Link href={`/student/courses/${e.course.id}`}
+                        className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 rounded-xl transition-all active:scale-95">
+                        <Play className="w-3.5 h-3.5 fill-white" />
+                        {e.status === 'COMPLETED' ? 'Review Course' : 'Continue Learning'}
+                        </Link>
+                        <button 
+                            onClick={async () => {
+                                if (!confirm('Are you sure you want to drop this course? Your progress will be saved but you won\'t be enrolled.')) return;
+                                try {
+                                    await courseApi.dropCourse(token!, e.course.id);
+                                    load();
+                                } catch { alert('Failed to drop course'); }
+                            }}
+                            className="p-2 border border-slate-200 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors" title="Drop Course">
+                            <Users className="w-4 h-4" />
+                        </button>
+                    </div>
                   </div>
                 </div>
               </div>

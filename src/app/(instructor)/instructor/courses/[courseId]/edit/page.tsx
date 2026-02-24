@@ -9,7 +9,7 @@ import { z } from 'zod';
 import {
   Save, Globe, Lock, Trash2, Plus, ChevronDown, ChevronRight,
   GripVertical, Edit3, Check, X, Loader2, ArrowLeft, Eye, AlertCircle,
-  BookOpen, Video, FileText,
+  BookOpen, Video, FileText, ArrowUp, ArrowDown, Settings, Clock, PlayCircle, CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import InstructorHeader from '@/components/instructor/InstructorHeader';
@@ -35,18 +35,24 @@ const inputCls = (err?: string) => cn(
 // ── Section & Lesson inline editors ──────────────────────────────────────────
 
 function LessonRow({
-  lesson, token, onDeleted, onUpdated,
+  lesson, token, onDeleted, onUpdated, onMoveUp, onMoveDown, isFirst, isLast,
 }: {
   lesson: any; token: string;
   onDeleted: (id: string) => void;
   onUpdated: (lesson: any) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  isFirst?: boolean;
+  isLast?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(lesson.title);
   const [saving, setSaving] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const dispatch = useAppDispatch();
 
   const save = async () => {
+    if (!title.trim()) return;
     setSaving(true);
     try {
       const updated = await courseApi.updateLesson(token, lesson.id, { title });
@@ -68,42 +74,224 @@ function LessonRow({
   };
 
   return (
-    <div className="flex items-center gap-2 py-2 pl-4 pr-3 rounded-xl hover:bg-slate-50 group transition-colors">
-      <GripVertical className="w-4 h-4 text-slate-300 shrink-0 cursor-grab" />
-      <Video className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-      {editing ? (
-        <input
-          autoFocus
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          className="flex-1 text-sm border border-amber-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-100"
-        />
-      ) : (
-        <span className="flex-1 text-sm text-slate-700 truncate">{lesson.title}</span>
-      )}
-      {lesson.isPreview && (
-        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 shrink-0">Preview</span>
-      )}
-      <div className={cn('flex items-center gap-1 shrink-0', editing ? 'flex' : 'opacity-0 group-hover:opacity-100')}>
-        {editing ? (
-          <>
-            <button onClick={save} disabled={saving} className="w-7 h-7 flex items-center justify-center bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all">
-              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-            </button>
-            <button onClick={() => { setEditing(false); setTitle(lesson.title); }} className="w-7 h-7 flex items-center justify-center bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all">
-              <X className="w-3 h-3" />
-            </button>
-          </>
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2 py-2 pl-4 pr-3 rounded-xl hover:bg-slate-50 group transition-colors">
+        <div className="flex flex-col items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity pr-1">
+          <button
+            onClick={onMoveUp}
+            disabled={isFirst}
+            className="text-slate-300 hover:text-amber-500 disabled:opacity-0 transition-colors"
+          >
+            <ArrowUp className="w-3 h-3" />
+          </button>
+          <button
+            onClick={onMoveDown}
+            disabled={isLast}
+            className="text-slate-300 hover:text-amber-500 disabled:opacity-0 transition-colors"
+          >
+            <ArrowDown className="w-3 h-3" />
+          </button>
+        </div>
+        
+        {lesson.videoUrl ? (
+          <Video className="w-3.5 h-3.5 text-amber-500 shrink-0" />
         ) : (
-          <>
-            <button onClick={() => setEditing(true)} className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all">
-              <Edit3 className="w-3 h-3" />
-            </button>
-            <button onClick={del} className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-              <Trash2 className="w-3 h-3" />
-            </button>
-          </>
+          <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
         )}
+        
+        {editing ? (
+          <input
+            autoFocus
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && save()}
+            className="flex-1 text-sm border border-amber-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-100"
+          />
+        ) : (
+          <div className="flex-1 min-w-0 flex flex-col">
+            <span className="text-sm text-slate-700 truncate font-medium">{lesson.title}</span>
+            {lesson.videoDurationSeconds > 0 && (
+              <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                <Clock className="w-2.5 h-2.5" />
+                {Math.floor(lesson.videoDurationSeconds / 60)}:{String(lesson.videoDurationSeconds % 60).padStart(2, '0')}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center gap-1 shrink-0">
+          {lesson.isPreview && (
+            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 mr-1">Preview</span>
+          )}
+          
+          <div className={cn('flex items-center gap-1', editing ? 'flex' : 'opacity-0 group-hover:opacity-100')}>
+            {editing ? (
+              <>
+                <button onClick={save} disabled={saving} className="w-7 h-7 flex items-center justify-center bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all">
+                  {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                </button>
+                <button onClick={() => { setEditing(false); setTitle(lesson.title); }} className="w-7 h-7 flex items-center justify-center bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all">
+                  <X className="w-3 h-3" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => setShowModal(true)} className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Edit details">
+                  <Settings className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => setEditing(true)} className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Rename">
+                  <Edit3 className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={del} className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {showModal && (
+        <LessonEditModal 
+          lesson={lesson} 
+          token={token} 
+          onClose={() => setShowModal(false)} 
+          onUpdated={(updated) => {
+            onUpdated(updated);
+            setShowModal(false);
+          }} 
+        />
+      )}
+    </div>
+  );
+}
+
+function LessonEditModal({ 
+  lesson, token, onClose, onUpdated 
+}: { 
+  lesson: any; token: string; onClose: () => void; onUpdated: (l: any) => void 
+}) {
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    title: lesson.title || '',
+    description: lesson.description || '',
+    videoUrl: lesson.videoUrl || '',
+    videoDurationSeconds: lesson.videoDurationSeconds || 0,
+    isPreview: lesson.isPreview || false,
+  });
+  const dispatch = useAppDispatch();
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const updated = await courseApi.updateLesson(token, lesson.id, {
+        ...formData,
+        videoDurationSeconds: Number(formData.videoDurationSeconds)
+      });
+      onUpdated(updated);
+      dispatch(addToast(toast.success('Lesson updated')));
+    } catch (err: any) {
+      dispatch(addToast(toast.error('Failed to update lesson', err.message)));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-amber-500" />
+            Edit Lesson Details
+          </h3>
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-xl transition-colors">
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSave} className="p-8 space-y-5">
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Lesson Title</label>
+            <input 
+              value={formData.title}
+              onChange={e => setFormData({...formData, title: e.target.value})}
+              className={inputCls()} 
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Content / Description (for Text Lessons)</label>
+            <textarea 
+              value={formData.description}
+              onChange={e => setFormData({...formData, description: e.target.value})}
+              rows={4}
+              placeholder="Enter text content or internal notes..."
+              className={cn(inputCls(), 'resize-none')}
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Video URL</label>
+              <div className="relative">
+                <PlayCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input 
+                  value={formData.videoUrl}
+                  onChange={e => setFormData({...formData, videoUrl: e.target.value})}
+                  placeholder="https://vimeo..."
+                  className={cn(inputCls(), 'pl-9')}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Duration (Seconds)</label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input 
+                  type="number"
+                  value={formData.videoDurationSeconds}
+                  onChange={e => setFormData({...formData, videoDurationSeconds: Number(e.target.value)})}
+                  className={cn(inputCls(), 'pl-9')}
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <input 
+              type="checkbox"
+              id="is_preview"
+              checked={formData.isPreview}
+              onChange={e => setFormData({...formData, isPreview: e.target.checked})}
+              className="w-5 h-5 rounded-lg border-slate-300 text-amber-500 focus:ring-amber-200"
+            />
+            <label htmlFor="is_preview" className="text-sm font-bold text-slate-700 cursor-pointer">
+              Allow Free Preview
+              <span className="block text-[11px] font-normal text-slate-500 mt-0.5">Students can watch this lesson without enrolling.</span>
+            </label>
+          </div>
+
+          <div className="pt-4 border-t border-slate-100 flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-6 py-3 rounded-2xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 flex items-center justify-center gap-2 bg-slate-900 text-white font-bold text-sm px-6 py-3 rounded-2xl hover:bg-slate-800 transition-all disabled:opacity-60"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Details
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -162,6 +350,30 @@ function SectionBlock({
     }
   };
 
+  const moveLesson = async (index: number, direction: 'up' | 'down') => {
+    const newIdx = direction === 'up' ? index - 1 : index + 1;
+    if (newIdx < 0 || newIdx >= lessons.length) return;
+
+    const newLessons = [...lessons];
+    const temp = newLessons[index];
+    newLessons[index] = newLessons[newIdx];
+    newLessons[newIdx] = temp;
+
+    // Optimistically update
+    setLessons(newLessons);
+
+    try {
+      // Sync with backend (serial updates for now, could be improved)
+      await Promise.all([
+        courseApi.updateLesson(token, newLessons[index].id, { orderIndex: index }),
+        courseApi.updateLesson(token, newLessons[newIdx].id, { orderIndex: newIdx }),
+      ]);
+    } catch {
+      dispatch(addToast(toast.error('Failed to reorder lessons')));
+      // Revert or reload
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       {/* Section header */}
@@ -175,6 +387,7 @@ function SectionBlock({
             autoFocus
             value={title}
             onChange={e => setTitle(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && saveTitle()}
             className="flex-1 text-sm font-semibold border border-amber-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-100"
           />
         ) : (
@@ -207,11 +420,15 @@ function SectionBlock({
       {/* Lessons */}
       {open && (
         <div className="divide-y divide-slate-50 px-1 py-1">
-          {lessons.map(l => (
+          {lessons.map((l, idx) => (
             <LessonRow
               key={l.id}
               lesson={l}
               token={token}
+              isFirst={idx === 0}
+              isLast={idx === lessons.length - 1}
+              onMoveUp={() => moveLesson(idx, 'up')}
+              onMoveDown={() => moveLesson(idx, 'down')}
               onDeleted={id => setLessons(prev => prev.filter(x => x.id !== id))}
               onUpdated={updated => setLessons(prev => prev.map(x => x.id === updated.id ? updated : x))}
             />
@@ -259,6 +476,8 @@ const editSchema = z.object({
   level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'ALL']),
   thumbnailUrl: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
   categoryId: z.string().min(1, 'Pick a category'),
+  whatYouWillLearn: z.string().optional().or(z.literal('')),
+  requirements: z.string().optional().or(z.literal('')),
 });
 
 type EditForm = z.infer<typeof editSchema>;
@@ -294,6 +513,8 @@ export default function CourseEditPage() {
         level: c.level ?? 'BEGINNER',
         thumbnailUrl: c.thumbnailUrl ?? '',
         categoryId: c.categoryId ?? '',
+        whatYouWillLearn: Array.isArray(c.whatYouWillLearn) ? c.whatYouWillLearn.join('\n') : '',
+        requirements: Array.isArray(c.requirements) ? c.requirements.join('\n') : '',
       });
       setSections(c.sections ?? []);
     }
@@ -306,7 +527,12 @@ export default function CourseEditPage() {
     if (!token || !courseId) return;
     const result = await dispatch(updateCourse({
       token, id: courseId,
-      data: { ...data, price: Number(data.price) },
+      data: { 
+        ...data, 
+        price: Number(data.price),
+        whatYouWillLearn: data.whatYouWillLearn ? data.whatYouWillLearn.split('\n').filter((l: string) => l.trim()) : [],
+        requirements: data.requirements ? data.requirements.split('\n').filter((l: string) => l.trim()) : [],
+      },
     }));
     if (updateCourse.fulfilled.match(result)) {
       dispatch(addToast(toast.success('Course updated!', 'Changes saved successfully.')));
@@ -322,11 +548,28 @@ export default function CourseEditPage() {
     const result = await dispatch(publishCourse({ token, id: courseId, status: newStatus as any }));
     if (publishCourse.fulfilled.match(result)) {
       dispatch(addToast(toast.success(
-        result.payload.status === 'PUBLISHED' ? 'Course published!' : 'Course unpublished',
-        result.payload.status === 'PUBLISHED' ? 'Students can now discover your course.' : 'Course moved to draft.'
+        result.payload.status === 'PUBLISHED' ? 'Course published!' : 'Course moved to draft',
+        result.payload.status === 'PUBLISHED' ? 'Students can now discover your course.' : 'Course is no longer visible to students.'
       )));
     } else {
       dispatch(addToast(toast.error('Failed to change status', result.payload as string)));
+    }
+    setPublishLoading(false);
+  };
+
+  const archiveCourse = async () => {
+    if (!token || !courseId) return;
+    if (!confirm('Are you sure you want to archive this course? It will be hidden from everyone.')) return;
+    
+    setPublishLoading(true);
+    const result = await dispatch(updateCourse({
+      token, id: courseId,
+      data: { status: 'ARCHIVED' },
+    }));
+    if (updateCourse.fulfilled.match(result)) {
+      dispatch(addToast(toast.success('Course archived')));
+    } else {
+      dispatch(addToast(toast.error('Failed to archive course')));
     }
     setPublishLoading(false);
   };
@@ -382,6 +625,15 @@ export default function CourseEditPage() {
               {publishLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : course?.status === 'PUBLISHED' ? <Lock className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
               {course?.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
             </button>
+            {course?.status !== 'ARCHIVED' && (
+              <button
+                onClick={archiveCourse}
+                disabled={publishLoading || updating}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs bg-red-50 text-red-600 hover:bg-red-100 transition-all active:scale-95 border border-red-100"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Archive
+              </button>
+            )}
           </div>
         }
       />
@@ -441,8 +693,35 @@ export default function CourseEditPage() {
 
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Thumbnail URL</label>
-                  <input {...register('thumbnailUrl')} type="url" placeholder="https://..." className={inputCls(errors.thumbnailUrl?.message)} />
+                  <input {...register('thumbnailUrl')} type="url" placeholder="https://..." className={inputCls()} />
                   <FieldError msg={errors.thumbnailUrl?.message} />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 pt-2">
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5 flex items-center gap-2">
+                      <CheckCircle className="w-3.5 h-3.5" /> What Students Will Learn
+                    </label>
+                    <textarea 
+                      {...register('whatYouWillLearn')} 
+                      rows={4} 
+                      placeholder="Students will learn how to...&#10;Key concept 1&#10;Key concept 2" 
+                      className={cn(inputCls(), 'resize-none')} 
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">One point per line.</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5 flex items-center gap-2">
+                      <AlertCircle className="w-3.5 h-3.5" /> Requirements
+                    </label>
+                    <textarea 
+                      {...register('requirements')} 
+                      rows={3} 
+                      placeholder="Basic JS knowledge&#10;Computer with Node.js installed" 
+                      className={cn(inputCls(), 'resize-none')} 
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">One requirement per line.</p>
+                  </div>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100">

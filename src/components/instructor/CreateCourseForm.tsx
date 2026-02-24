@@ -185,8 +185,8 @@ export default function CreateCourseForm() {
       price: Number(step1Data.price),
       level: step1Data.level,
       thumbnailUrl: data.thumbnailUrl || undefined,
-      whatYouWillLearn: data.whatYouWillLearn || undefined,
-      requirements: data.requirements || undefined,
+      whatYouWillLearn: data.whatYouWillLearn ? data.whatYouWillLearn.split('\n').filter(l => l.trim()) : undefined,
+      requirements: data.requirements ? data.requirements.split('\n').filter(l => l.trim()) : undefined,
     };
 
     const result = await dispatch(createCourse({ token, data: payload }));

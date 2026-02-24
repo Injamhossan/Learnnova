@@ -83,10 +83,11 @@ export type SectionInput = z.infer<typeof sectionSchema>;
 
 export const lessonSchema = z.object({
   title: z.string().min(2, 'Lesson title required').max(100),
+  description: z.string().max(2000).optional().or(z.literal('')),
   videoUrl: z.string().url('Enter a valid video URL').optional().or(z.literal('')),
-  duration: z.number().int().min(0).optional(),
-  isFree: z.boolean().optional(),
-  order: z.number().int().min(0).optional(),
+  videoDurationSeconds: z.number().int().min(0).optional().default(0),
+  isPreview: z.boolean().optional().default(false),
+  orderIndex: z.number().int().min(0).optional(),
 });
 export type LessonInput = z.infer<typeof lessonSchema>;
 

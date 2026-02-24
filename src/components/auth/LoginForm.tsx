@@ -127,6 +127,7 @@ export default function LoginForm() {
             </button>
             <button
               type="button"
+              onClick={() => signIn('github', { callbackUrl: '/auth/callback' })}
               className="flex w-full items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700"
             >
               <Github className="w-5 h-5" />
@@ -174,12 +175,12 @@ export default function LoginForm() {
                 >
                   Password
                 </label>
-                <a
-                  href="#"
+                <Link
+                  href="/forgot-password"
                   className="text-sm font-medium text-yellow-600 hover:text-yellow-700"
                 >
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />

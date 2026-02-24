@@ -93,7 +93,15 @@ export const adminApi = {
 // Course endpoints
 // ─────────────────────────────────────────────────────────────────────────────
 export const courseApi = {
-  getPublic: () => request<any[]>('/api/courses'),
+  getPublic: (params: { limit?: number; search?: string; category?: string; sort?: string; cursor?: string } = {}) => {
+    const q = new URLSearchParams(
+      Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => [k, String(v)]))
+    );
+    return request<any>(`/api/courses?${q}`);
+  },
+
+  getCourseDetail: (idOrSlug: string) =>
+    request<any>(`/api/courses/${idOrSlug}`),
 
   getMyCourses: (token: string) =>
     request<any[]>('/api/courses/my-courses', { token }),
@@ -134,6 +142,12 @@ export const courseApi = {
     request<any>(`/api/courses/lessons/${id}`, { method: 'DELETE', token }),
 
   // Student endpoints
+  enroll: (token: string, courseId: string) =>
+    request<any>(`/api/students/enroll/${courseId}`, { method: 'POST', token }),
+
+  dropCourse: (token: string, courseId: string) =>
+    request<any>(`/api/students/enroll/${courseId}`, { method: 'DELETE', token }),
+
   getMyEnrollments: (token: string) =>
     request<any>('/api/students/enrollments', { token }),
 

@@ -3,6 +3,7 @@
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import { Bell, Search } from 'lucide-react';
+import UserAvatar from '@/components/common/UserAvatar';
 
 interface AdminHeaderProps {
   title: string;
@@ -53,11 +54,15 @@ export default function AdminHeader({ title, subtitle, actions }: AdminHeaderPro
         {/* Divider */}
         <div className="h-10 w-px bg-slate-100 mx-1" />
 
-        {/* Avatar */}
+        {/* Avatar and Profile */}
         <div className="flex items-center gap-4 pl-1 group cursor-pointer">
-          <div className="w-11 h-11 rounded-2xl bg-slate-900 flex items-center justify-center text-white text-xs font-bold shadow-xl shadow-slate-200 group-hover:scale-105 transition-transform">
-            {initials || 'U'}
-          </div>
+          <UserAvatar 
+            src={session?.user?.image} 
+            name={name} 
+            size={44} 
+            className="rounded-2xl shadow-xl shadow-slate-200 group-hover:scale-105 transition-transform border border-slate-100"
+            fallbackClassName="bg-slate-900 text-white"
+          />
           <div className="hidden md:block">
             <p className="text-sm font-bold text-slate-900 leading-tight group-hover:translate-x-1 transition-transform">{name}</p>
             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
