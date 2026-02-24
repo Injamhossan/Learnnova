@@ -1,0 +1,85 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { Search, UserCheck, UserX, Download, Plus, Trash2, ShieldCheck, ShieldAlert, Loader2, X, Eye, EyeOff } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
+
+interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  isEmailVerified: boolean;
+  createdAt: string;
+}
+
+const roleBadge: Record<string, string> = {
+  SUPER_ADMIN: 'bg-indigo-600 text-white shadow-md shadow-indigo-100',
+  ADMIN: 'bg-slate-900 text-white shadow-md shadow-slate-200',
+  INSTRUCTOR: 'bg-amber-100 text-amber-700 border-amber-200',
+  STUDENT: 'bg-blue-100 text-blue-700 border-blue-200',
+};
+
+const roleFilters = ['All', 'SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR', 'STUDENT'];
+
+export default function UsersTable() {
+  const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get('search') || '';
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState(urlSearch);
+  const [filter, setFilter] = useState('All');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const currentUserRole = (session?.user as any)?.role?.toUpperCase();
+  const isSuperAdmin = currentUserRole === 'SUPER_ADMIN';
+
+  // Sync with URL search param
+  useEffect(() => {
+    setSearch(urlSearch);
+    setPage(1);
+  }, [urlSearch]);
+
+  // Create Admin Modal state
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({ fullName: '', email: '', password: '', role: 'ADMIN' });
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const roleParam = filter === 'All' ? '' : `&role=${filter}`;
+      const res = await fetch(`${apiUrl}/api/admin/users?page=${page}&search=${encodeURIComponent(search)}${roleParam}`, {
+        headers: {
+          Authorization: `Bearer ${(session?.user as any)?.backendToken}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(data.users);
+        setTotalPages(data.pages);
+        setTotal(data.total);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, search, filter, session]);
+
+  useEffect(() => {
+    if (session) {
+      const timeout = setTimeout(fetchUsers, search === urlSearch ? 0 : 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [fetchUsers, session, search, urlSearch]);

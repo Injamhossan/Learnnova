@@ -8,18 +8,25 @@ import { z } from 'zod';
 import {
   User, Shield, Bell, Palette, Globe, Trash2,
   ChevronRight, Save, Loader2, Eye, EyeOff, Check,
-  AlertTriangle, Link, Twitter, Linkedin,
+  AlertTriangle, Link, Twitter,  Linkedin, Mail,
   Phone, Camera, Tag, FileText, GraduationCap,
-  Moon, Sun, Monitor,
+  Moon, Sun, Monitor, ShieldCheck, X
 } from 'lucide-react';
-import { userApi } from '@/lib/api';
+import { userApi, authApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Profile {
   id: string; fullName: string; email: string; role: string;
   avatarUrl?: string; bio?: string; phone?: string; createdAt: string;
+  isEmailVerified?: boolean;
   instructor?: {
     headline?: string; description?: string; expertise?: string[];
     websiteUrl?: string; linkedinUrl?: string; twitterUrl?: string;
@@ -152,6 +159,12 @@ function ProfilePanel({ profile, token, onSaved }: { profile: Profile; token: st
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [avatarError, setAvatarError] = useState(false);
 
+  // Verification States
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [reqLoading, setReqLoading] = useState(false);
+
   const { register, handleSubmit, watch, formState: { errors } } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: { fullName: profile.fullName, bio: profile.bio ?? '', phone: profile.phone ?? '', avatarUrl: profile.avatarUrl ?? '' },
@@ -159,6 +172,34 @@ function ProfilePanel({ profile, token, onSaved }: { profile: Profile; token: st
 
   const avatarUrl = watch('avatarUrl');
   const initials = profile.fullName?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+  const handleRequestOtp = async () => {
+    setReqLoading(true);
+    try {
+      await authApi.requestVerification(token);
+      setToast({ msg: 'Verification code sent to your email!', type: 'success' });
+      setOtpModalOpen(true);
+    } catch (e: any) {
+      setToast({ msg: e.message || 'Failed to send code', type: 'error' });
+    } finally {
+      setReqLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otp.length < 6) return;
+    setVerifying(true);
+    try {
+      await authApi.verifyEmail({ email: profile.email, code: otp });
+      setToast({ msg: 'Email verified successfully!', type: 'success' });
+      setOtpModalOpen(false);
+      onSaved({ isEmailVerified: true });
+    } catch (e: any) {
+      setToast({ msg: e.message || 'Invalid or expired code', type: 'error' });
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const onSubmit = async (data: ProfileForm) => {
     setSaving(true);
@@ -174,6 +215,73 @@ function ProfilePanel({ profile, token, onSaved }: { profile: Profile; token: st
   return (
     <>
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
+      
+      {/* OTP Modal */}
+      {otpModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Verify Email</h3>
+                <p className="text-xs text-slate-500 mt-1">Enter the 6-digit code sent to <span className="text-slate-900 font-semibold">{profile.email}</span></p>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setOtpModalOpen(false)} 
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-50 transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex justify-center my-8">
+              <InputOTP 
+                maxLength={6} 
+                pattern={REGEXP_ONLY_DIGITS}
+                value={otp}
+                onChange={(val) => setOtp(val)}
+              >
+                <InputOTPGroup className="gap-2">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <InputOTPSlot 
+                      key={i} 
+                      index={i} 
+                      className="w-10 h-14 rounded-xl border-slate-200 font-bold text-lg focus:ring-2 focus:ring-slate-900 shadow-sm" 
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleVerifyOtp}
+              disabled={verifying || otp.length < 6}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-slate-200"
+            >
+              {verifying ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Verifying...
+                </>
+              ) : 'Verify Now'}
+            </button>
+            
+            <p className="text-center text-[10px] text-slate-400 mt-5 leading-relaxed">
+              Didn't receive the code? <br />
+              <button 
+                type="button" 
+                onClick={handleRequestOtp} 
+                disabled={reqLoading}
+                className="text-slate-900 font-bold hover:underline disabled:opacity-50"
+              >
+                {reqLoading ? 'Sending...' : 'Request a new one'}
+              </button>
+            </p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="flex items-center gap-5 pb-6 border-b border-slate-100">
           <div className="relative shrink-0">
@@ -190,7 +298,23 @@ function ProfilePanel({ profile, token, onSaved }: { profile: Profile; token: st
           </div>
           <div>
             <p className="font-bold text-slate-900">{profile.fullName}</p>
-            <p className="text-sm text-slate-500">{profile.email}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-sm text-slate-500">{profile.email}</p>
+              {profile.isEmailVerified ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                  <ShieldCheck className="w-3 h-3" /> Verified
+                </span>
+              ) : (
+                <button 
+                  type="button" 
+                  onClick={handleRequestOtp} 
+                  disabled={reqLoading}
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-100 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                >
+                  {reqLoading ? 'Sending...' : 'Verify Email'}
+                </button>
+              )}
+            </div>
             <span className={cn('inline-flex items-center mt-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border', ROLE_COLORS[profile.role] ?? 'bg-slate-100 text-slate-600 border-slate-200')}>
               {profile.role.replace('_', ' ')}
             </span>

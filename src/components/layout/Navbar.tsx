@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ChevronRight, Menu, X, User, LayoutDashboard, LogOut } from 'lucide-react';
+import { ChevronRight, Menu, X, User, LayoutDashboard, LogOut, Bell } from 'lucide-react';
 import NavLogo from '@/assets/NavLogo.png';
 import { cn } from '@/lib/utils';
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import UserAvatar from '@/components/common/UserAvatar';
+import NotificationCenter from './NotificationCenter';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -85,6 +86,7 @@ export default function Navbar() {
               <div className="w-10 h-10 rounded-full bg-slate-100 animate-pulse" />
             ) : session ? (
               <div className="flex items-center gap-3">
+                <NotificationCenter />
                 <div className="relative">
                   <button 
                     onClick={() => setProfileOpen(!profileOpen)}
@@ -164,7 +166,10 @@ export default function Navbar() {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-8">
-            <Image src={NavLogo} alt="EduFlow Logo" width={100} height={32} className="h-8 w-auto object-contain" />
+            <div className="flex items-center gap-4">
+               <Image src={NavLogo} alt="EduFlow Logo" width={100} height={32} className="h-8 w-auto object-contain" />
+               <NotificationCenter />
+            </div>
             <button 
               onClick={() => setMobileMenuOpen(false)}
               className="p-2 text-slate-400 hover:text-slate-900 transition-colors"

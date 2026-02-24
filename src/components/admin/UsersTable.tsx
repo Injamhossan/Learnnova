@@ -31,11 +31,17 @@ export default function UsersTable() {
   const [filter, setFilter] = useState('All');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [total, setTotal] = useState(0);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const currentUserRole = (session?.user as any)?.role?.toUpperCase();
   const isSuperAdmin = currentUserRole === 'SUPER_ADMIN';
+
+  // Sync with URL search param
+  useEffect(() => {
+    setSearch(urlSearch);
+    setPage(1);
+  }, [urlSearch]);
 
   // Create Admin Modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -48,8 +54,8 @@ export default function UsersTable() {
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const roleParam = filter !== 'All' ? `&role=${filter}` : '';
-      const res = await fetch(`${apiUrl}/api/admin/users?page=${page}&search=${search}${roleParam}`, {
+      const roleParam = filter === 'ALL' ? '' : `&role=${filter}`;
+      const res = await fetch(`${apiUrl}/api/admin/users?page=${page}&search=${encodeURIComponent(search)}${roleParam}`, {
         headers: {
           Authorization: `Bearer ${(session?.user as any)?.backendToken}`,
         },
@@ -58,7 +64,7 @@ export default function UsersTable() {
       if (res.ok) {
         setUsers(data.users);
         setTotalPages(data.pages);
-        setTotalUsers(data.total);
+        setTotal(data.total);
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -68,8 +74,11 @@ export default function UsersTable() {
   }, [page, search, filter, session]);
 
   useEffect(() => {
-    if (session) fetchUsers();
-  }, [fetchUsers, session]);
+    if (session) {
+      const timeout = setTimeout(fetchUsers, search === urlSearch ? 0 : 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [fetchUsers, session, search, urlSearch]);
 
   const toggleStatus = async (userId: string) => {
     setUpdatingId(userId);

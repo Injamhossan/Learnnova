@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { Plus, Tag, Trash2, Pencil, Loader2, BookOpen, X, Check } from 'lucide-react';
+import { Plus, Tag, Trash2, Pencil, Loader2, BookOpen, X, Check, Search } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -30,6 +30,7 @@ export default function CategoriesManager() {
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
+  const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const token = (session?.user as any)?.backendToken;
@@ -79,13 +80,30 @@ export default function CategoriesManager() {
     }
   };
 
+  const filtered = categories.filter(c => 
+    c.name.toLowerCase().includes(search.toLowerCase()) || 
+    c.slug.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-        <div>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total</p>
-          <p className="text-3xl font-bold text-slate-900">{categories.length} <span className="text-base font-semibold text-slate-400">Categories</span></p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-6">
+          <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total</p>
+            <p className="text-3xl font-bold text-slate-900">{categories.length} <span className="text-base font-semibold text-slate-400">Categories</span></p>
+          </div>
+          <div className="relative hidden lg:block">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input 
+              type="text"
+              placeholder="Filter categories..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-slate-200 w-64 transition-all"
+            />
+          </div>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
@@ -96,9 +114,21 @@ export default function CategoriesManager() {
         </button>
       </div>
 
+      {/* Mobile Search */}
+      <div className="lg:hidden relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <input 
+          type="text"
+          placeholder="Filter categories..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-slate-100 w-full"
+        />
+      </div>
+
       {/* Create Form */}
       {showForm && (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <p className="text-sm font-bold text-slate-900 uppercase tracking-widest">Create New Category</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -139,9 +169,14 @@ export default function CategoriesManager() {
           <Loader2 className="w-8 h-8 animate-spin mb-3" />
           <p className="text-xs font-bold uppercase tracking-widest">LOADING CATEGORIES...</p>
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-3xl">
+          <Tag className="w-10 h-10 text-slate-100 mb-3" />
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No categories found</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {categories.map((cat, idx) => (
+          {filtered.map((cat, idx) => (
             <div
               key={cat.id}
               className="bg-white border border-slate-200 rounded-3xl p-6 hover:shadow-lg hover:shadow-slate-200/50 transition-all group"

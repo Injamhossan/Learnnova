@@ -170,6 +170,12 @@ export const authApi = {
 
   register: (data: { fullName: string; email: string; password: string; role: string }) =>
     request<any>('/api/auth/register', { method: 'POST', body: data }),
+
+  requestVerification: (token: string) =>
+    request<any>('/api/auth/request-verification', { method: 'POST', token }),
+
+  verifyEmail: (data: { email: string; code: string }) =>
+    request<any>('/api/auth/verify-email', { method: 'POST', body: data }),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
