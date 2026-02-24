@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Learnova Frontend 🎓
 
-## Getting Started
+Learnova is a premium, high-performance Learning Management System (LMS) frontend built with **Next.js 15**, **React 19**, and **Framer Motion**. It provides a stunning, interactive experience for students, instructors, and administrators.
 
-First, run the development server:
+## 🌟 Why Learnova?
+Learnova is designed for modern education. Whether you are an instructor sharing your expertise or a student looking to upskill, our platform offers:
+- **Premium Aesthetics**: A clean, modern UI with glassmorphism effects and vibrant accents.
+- **Smooth Interaction**: Fluid animations and page transitions powered by Framer Motion.
+- **Lightning Fast**: Optimized server-side rendering and client-side transitions.
+- **Role-Based Experience**: Dedicated workspaces for Students, Instructors, and Admins.
 
+---
+
+## ✨ Key Features
+- **Responsive Landing Page**: High-conversion hero sections and featured course displays.
+- **Advanced Auth Flow**: Social login (Google/Github), OTP verification, and secure password resets.
+- **Dynamic Course Explorer**: Powerful search and filtering to find the perfect course.
+- **Student Dashboard**: Track progress, manage wishlist, and view enrolled courses.
+- **Instructor Dashboard**: Analytics, course creation tools, and student management.
+- **Admin Suite**: Comprehensive user and category management with search synchronization.
+- **Real-time Feedback**: Toast notifications and global loading states for a seamless feel.
+
+---
+
+## 🛠️ Setup Instructions
+
+### 1. Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd learnnova
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Configuration
+Create a `.env.local` file in the root directory:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+# URL
+NEXTAUTH_URL="http://localhost:3000"
+AUTH_SECRET="your_nextauth_secret"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# OAuth Providers
+GOOGLE_CLIENT_ID="your_google_id"
+GOOGLE_CLIENT_SECRET="your_google_secret"
+GITHUB_CLIENT_ID="your_github_id"
+GITHUB_CLIENT_SECRET="your_github_secret"
 
-## Learn More
+# Backend API
+NEXT_PUBLIC_API_URL="http://localhost:5000"
 
-To learn more about Next.js, take a look at the following resources:
+# FingerprintJS (Optional)
+NEXT_PUBLIC_FINGERPRINT_API_KEY="your_api_key"
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Start Development Server
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🏗️ Architecture & Tech Stack
+- **Framework**: [Next.js 15](https://nextjs.org) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com) & [Lucide React Icons](https://lucide.dev)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Auth**: [NextAuth.js v5](https://nextauth.js.org)
+- **State Management**: [Redux Toolkit](https://redux-toolkit.js.org)
+- **Forms**: [React Hook Form](https://react-hook-form.com) & [Zod](https://zod.dev)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧪 Testing Credentials
+For easy testing, you can use the default admin account:
+- **Email**: `admin@learnnova.com`
+- **Password**: `learnnova123`
+
+---
+
+## 📄 License
+This project is proprietary and for educational purposes.
