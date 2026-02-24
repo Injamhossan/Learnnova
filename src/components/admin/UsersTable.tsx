@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, UserCheck, UserX, Download, Plus, Trash2, ShieldCheck, ShieldAlert, Loader2, X, Eye, EyeOff } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
+
 
 interface User {
   id: string;
@@ -25,6 +27,9 @@ const roleFilters = ['All', 'SUPER_ADMIN', 'ADMIN', 'INSTRUCTOR', 'STUDENT'];
 
 export default function UsersTable() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get('search') || '';
+
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -54,7 +59,7 @@ export default function UsersTable() {
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const roleParam = filter === 'ALL' ? '' : `&role=${filter}`;
+      const roleParam = filter === 'All' ? '' : `&role=${filter}`;
       const res = await fetch(`${apiUrl}/api/admin/users?page=${page}&search=${encodeURIComponent(search)}${roleParam}`, {
         headers: {
           Authorization: `Bearer ${(session?.user as any)?.backendToken}`,
@@ -355,7 +360,7 @@ export default function UsersTable() {
         {/* Pagination Footer */}
         <div className="px-8 py-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            {loading ? 'LOADING CONTENTS...' : `DISPLAYING ${users.length} OF ${totalUsers} TOTAL USERS`}
+            {loading ? 'LOADING CONTENTS...' : `DISPLAYING ${users.length} OF ${total} TOTAL USERS`}
           </p>
           <div className="flex gap-2">
             <button 

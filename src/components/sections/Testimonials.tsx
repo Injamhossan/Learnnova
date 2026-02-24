@@ -4,6 +4,8 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { useCallback } from 'react';
+import { Reveal } from '@/components/animations/Reveal';
+import { motion } from 'framer-motion';
 
 const testimonials = [
   {
@@ -61,28 +63,42 @@ export default function Testimonials() {
   }, [emblaApi]);
 
   return (
-    <section id="testimonials" className="py-20 bg-slate-50 relative overflow-hidden">
+    <section id="testimonials" className="py-24 bg-slate-50 relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-yellow-100 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute top-1/2 -left-24 w-72 h-72 bg-blue-100 rounded-full blur-3xl opacity-30"></div>
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-24 -right-24 w-96 h-96 bg-yellow-100 rounded-full blur-3xl"
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute top-1/2 -left-24 w-72 h-72 bg-blue-100 rounded-full blur-3xl"
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
-            <span className="text-yellow-600 font-bold tracking-wider text-sm uppercase font-satoshi flex items-center gap-2">
-              <span className="w-8 h-[2px] bg-yellow-500"></span>
-              Testimonials
-            </span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl font-satoshi">
-              What our students say
-            </h2>
-            <p className="mt-4 text-lg text-slate-600 font-manrope max-w-lg">
-              Join thousands of learners who have transformed their careers with EduFlow.
-            </p>
+            <Reveal direction="right" delay={0.1}>
+              <span className="text-yellow-600 font-bold tracking-wider text-sm uppercase font-satoshi flex items-center gap-2">
+                <span className="w-8 h-[2px] bg-yellow-500"></span>
+                Testimonials
+              </span>
+            </Reveal>
+            <Reveal direction="up" delay={0.2}>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl font-satoshi">
+                What our students say
+              </h2>
+            </Reveal>
+            <Reveal direction="up" delay={0.3}>
+              <p className="mt-6 text-lg text-slate-600 font-manrope max-w-lg">
+                Join thousands of learners who have transformed their careers with Learnova.
+              </p>
+            </Reveal>
           </div>
 
           {/* Navigation Buttons */}
