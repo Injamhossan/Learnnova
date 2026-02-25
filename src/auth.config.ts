@@ -10,7 +10,7 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const userRole = (auth?.user as any)?.role;
+      const userRole = (auth?.user as any)?.role?.toUpperCase();
 
       const isOnAdmin = nextUrl.pathname.startsWith('/admin');
       const isOnStudent = nextUrl.pathname.startsWith('/student');
@@ -18,48 +18,73 @@ export const authConfig = {
       const isOnAuth = nextUrl.pathname.startsWith('/login') || nextUrl.pathname.startsWith('/signup');
       const isOnAuthCallback = nextUrl.pathname.startsWith('/auth/callback');
 
-      // 1. Strict Role-based protection (Safe Routing)
-      if (isOnAdmin && (!isLoggedIn || (userRole?.toUpperCase() !== 'ADMIN' && userRole?.toUpperCase() !== 'SUPER_ADMIN'))) {
-          console.log(`Unauthorized Admin access attempt by ${auth?.user?.email || 'Guest'}`);
-          return Response.redirect(new URL('/login?error=Unauthorized', nextUrl));
+      // 1. Protected Routes handling
+      if (isOnAdmin || isOnStudent || isOnInstructor) {
+        if (!isLoggedIn) return false; // Redirect to login
+        
+        // If logged in but role is missing for some reason, don't just kick to login with error
+        // Let them go to the callback/selector page if needed, or default dashboard
+        if (!userRole) return true; 
+
+        // Role-based protection
+        if (isOnAdmin && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+          return Response.redirect(new URL(userRole === 'INSTRUCTOR' ? '/instructor' : '/student', nextUrl));
+        }
+
+        if (isOnStudent && userRole !== 'STUDENT') {
+          if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') return Response.redirect(new URL('/admin', nextUrl));
+          if (userRole === 'INSTRUCTOR') return Response.redirect(new URL('/instructor', nextUrl));
+        }
+
+        if (isOnInstructor && userRole !== 'INSTRUCTOR') {
+          if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') return Response.redirect(new URL('/admin', nextUrl));
+          if (userRole === 'STUDENT') return Response.redirect(new URL('/student', nextUrl));
+        }
       }
 
-      // SUPER_ADMIN cannot enroll as student or create courses as instructor
-      if (isOnStudent && (!isLoggedIn || userRole?.toUpperCase() !== 'STUDENT')) {
-          const r = userRole?.toUpperCase();
-          if (r === 'ADMIN' || r === 'SUPER_ADMIN') return Response.redirect(new URL('/admin', nextUrl));
-          if (r === 'INSTRUCTOR') return Response.redirect(new URL('/instructor', nextUrl));
-          return Response.redirect(new URL('/login?error=Unauthorized', nextUrl));
-      }
-
-      if (isOnInstructor && (!isLoggedIn || userRole?.toUpperCase() !== 'INSTRUCTOR')) {
-          const r = userRole?.toUpperCase();
-          if (r === 'ADMIN' || r === 'SUPER_ADMIN') return Response.redirect(new URL('/admin', nextUrl));
-          if (r === 'STUDENT') return Response.redirect(new URL('/student', nextUrl));
-          return Response.redirect(new URL('/login?error=Unauthorized', nextUrl));
-      }
-
-
-      // 2. /auth/callback — redirect logged-in users to their dashboard
-      if (isOnAuthCallback && isLoggedIn) {
-          const role = userRole?.toUpperCase();
-          if (role === 'ADMIN' || role === 'SUPER_ADMIN') return Response.redirect(new URL('/admin', nextUrl));
-          if (role === 'INSTRUCTOR') return Response.redirect(new URL('/instructor', nextUrl));
+      // 2. Auth page redirection — prevent already-logged-in users from seeing login/signup
+      if (isOnAuth && isLoggedIn) {
+          if (userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') return Response.redirect(new URL('/admin', nextUrl));
+          if (userRole === 'INSTRUCTOR') return Response.redirect(new URL('/instructor', nextUrl));
           return Response.redirect(new URL('/student', nextUrl));
       }
 
-      // 3. Auth page redirection — prevent already-logged-in users from seeing login/signup
-      if (isOnAuth && isLoggedIn) {
-          const role = userRole?.toUpperCase();
-          if (role === 'ADMIN' || role === 'SUPER_ADMIN') return Response.redirect(new URL('/admin', nextUrl));
-          if (role === 'INSTRUCTOR') return Response.redirect(new URL('/instructor', nextUrl));
-          if (role === 'STUDENT') return Response.redirect(new URL('/student', nextUrl));
-          
-          // Break loop: if logged in but role is unknown, just stay on the login/landing page
-          return true;
+      return true;
+    },
+    async jwt({ token, user, account, trigger, session }) {
+      // 1. Initial Sign In
+      if (user) {
+        token.id = user.id;
+        token.role = (user as any).role;
+        token.backendToken = (user as any).token;
+        token.needsRole = (user as any).needsRole;
+        token.picture = user.image;
+
+        // Special handling for social logins if data is missing (sync happened in signIn callback)
+        if (account && (account.provider === 'google' || account.provider === 'github')) {
+          // If the role or token is still missing, we could fetch it here too
+          // but for now we rely on the signIn callback updating the user object correctly
+        }
       }
 
-      return true;
+      // 2. Handle updates (e.g. role selection)
+      if (trigger === "update" && session) {
+        if (session.role) token.role = session.role;
+        if (session.token) token.backendToken = session.token;
+        token.needsRole = false;
+      }
+      
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as any).id = token.id;
+        (session.user as any).role = token.role as string;
+        (session.user as any).backendToken = token.backendToken as string;
+        (session.user as any).needsRole = token.needsRole as boolean;
+        session.user.image = token.picture as string;
+      }
+      return session;
     },
   },
   providers: [],

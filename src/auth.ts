@@ -60,7 +60,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             id: data.id,
             name: data.fullName,
             email: data.email,
-            role: data.role,
+            role: data.role || 'STUDENT',
             token: data.token,
             image: data.avatarUrl || null,
           };
@@ -73,13 +73,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       if (account?.provider === 'google' || account?.provider === 'github') {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-        console.log(`Syncing social login for ${user.email} with backend...`);
+        console.log(`[AUTH] Syncing social login for ${user.email} with backend...`);
         
         try {
-          console.log('Sending social login data to backend...', { email: user.email, fullName: user.name });
           const res = await fetch(`${apiUrl}/api/auth/social-login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -92,51 +91,26 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
           if (!res.ok) {
             const errorBody = await res.text();
-            console.error('Failed to sync social login with backend:', res.status, errorBody);
+            console.error('[AUTH] Failed to sync social login:', res.status, errorBody);
             return false;
           }
 
           const data = await res.json();
-          console.log(`Social sync successful, assigned role: ${data.role}`);
+          console.log(`[AUTH] Social sync successful, role: ${data.role}`);
           
-          // Attach backend data to the user object
+          // CRITICAL: Update user object for the subsequent jwt callback
           (user as any).id = data.id;
           (user as any).role = data.role;
           (user as any).token = data.token;
-          (user as any).needsRole = data.needsRole; // New flag
+          (user as any).needsRole = data.needsRole;
           
           return true;
         } catch (error: any) {
-          console.error('Error during social login sync (Fetch Error):', error.message);
+          console.error('[AUTH] Social login sync error:', error.message);
           return false;
         }
       }
       return true;
-    },
-    async jwt({ token, user, trigger, session }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role;
-        token.backendToken = (user as any).token;
-        token.needsRole = (user as any).needsRole;
-        token.picture = user.image;
-      }
-      // Handle manual updates to the session
-      if (trigger === "update" && session?.role) {
-        token.role = session.role;
-        token.needsRole = false;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role as string;
-        (session.user as any).backendToken = token.backendToken as string;
-        (session.user as any).needsRole = token.needsRole as boolean;
-        session.user.image = token.picture as string;
-      }
-      return session;
     },
   },
 });
