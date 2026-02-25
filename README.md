@@ -109,7 +109,18 @@ Admin test account:
 - **Email**: `admin@learnnova.com`
 - **Password**: `learnnova123`
 
+Student test account:
+- **Email**: `jabed@gmail.com`
+- **Password**: `12345678`
+
+Instructor test account:
+- **Email**: `jahedulislam@gmail.com`
+- **Password**: `12345678`
+
 ---
+
+## 👤 Author
+- **Injam Hossan Mamun** - [GitHub](https://github.com/Injamhossan)
 
 ## 📄 License
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
