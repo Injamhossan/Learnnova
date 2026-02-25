@@ -53,7 +53,10 @@ export const authConfig = {
           const role = userRole?.toUpperCase();
           if (role === 'ADMIN' || role === 'SUPER_ADMIN') return Response.redirect(new URL('/admin', nextUrl));
           if (role === 'INSTRUCTOR') return Response.redirect(new URL('/instructor', nextUrl));
-          return Response.redirect(new URL('/student', nextUrl));
+          if (role === 'STUDENT') return Response.redirect(new URL('/student', nextUrl));
+          
+          // Break loop: if logged in but role is unknown, just stay on the login/landing page
+          return true;
       }
 
       return true;
