@@ -230,7 +230,7 @@ export default function StudentDashboardPage() {
                         <span className="text-xs font-bold text-blue-600 shrink-0">{e.progressPercentage}%</span>
                       </div>
                     </div>
-                    <Link href={`/courses/${e.course.id}`}
+                    <Link href={`/student/courses/${e.course.id}`}
                       className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white opacity-0 group-hover:opacity-100 transition-all">
                       <Play className="w-4 h-4 fill-current" />
                     </Link>

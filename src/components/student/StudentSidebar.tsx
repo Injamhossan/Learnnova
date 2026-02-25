@@ -9,7 +9,8 @@ import {
   GraduationCap, 
   BookOpen, 
   Heart, 
-  TrendingUp 
+  TrendingUp,
+  Receipt
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -26,6 +27,7 @@ const studentNavItems = [
       { href: '/student/courses', label: 'My Courses', icon: BookOpen },
       { href: '/student/wishlist', label: 'Wishlist', icon: Heart },
       { href: '/student/certificates', label: 'Certificates', icon: GraduationCap },
+      { href: '/student/payments', label: 'Payment History', icon: Receipt },
     ],
   },
   {

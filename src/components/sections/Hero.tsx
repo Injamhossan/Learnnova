@@ -38,7 +38,7 @@ const imageVariants: Variants = {
 
 export default function Hero() {
   return (
-    <section className="relative bg-slate-900 px-4 py-24 sm:px-6 lg:px-8 md:py-32 overflow-hidden">
+    <section className="relative z-10 bg-slate-900 px-4 py-24 sm:px-6 lg:px-8 md:py-32">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <motion.div 
@@ -160,10 +160,10 @@ export default function Hero() {
 
       {/* Stats Floating Card */}
       <motion.div 
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 150, x: "-50%" }}
+        animate={{ opacity: 1, y: "50%", x: "-50%" }}
         transition={{ duration: 0.8, delay: 1, ease: "easeOut" }}
-        className="absolute bottom-0 left-1/2 w-full max-w-5xl -translate-x-1/2 translate-y-1/2 px-6 sm:px-0 z-20"
+        className="absolute bottom-0 left-1/2 w-full max-w-5xl px-6 sm:px-0 z-20"
       >
         <div className="grid grid-cols-1 gap-8 rounded-2xl bg-white p-10 shadow-2xl ring-1 ring-slate-900/5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-slate-100">
           

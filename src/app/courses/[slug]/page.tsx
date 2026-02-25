@@ -6,12 +6,13 @@ import { useSession } from 'next-auth/react';
 import { 
   Star, Clock, BookOpen, Users, PlayCircle, Globe, 
   CheckCircle2, AlertCircle, ShoppingCart, Share2, 
-  Heart, ShieldCheck, ChevronRight, Loader2, Play
+  Heart, ShieldCheck, ChevronRight, Loader2, Play, ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
-import { courseApi } from '@/lib/api';
+import { courseApi, paymentApi } from '@/lib/api';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import CheckoutModal from '@/components/shared/CheckoutModal';
 import { addToast, toast } from '@/store/uiSlice';
 import { useAppDispatch } from '@/store';
 import Link from 'next/link';
@@ -27,6 +28,7 @@ export default function CourseDetailPage() {
   const [enrolling, setEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [enrollmentStatus, setEnrollmentStatus] = useState<string | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const token = (session?.user as any)?.backendToken;
 
@@ -66,17 +68,36 @@ export default function CourseDetailPage() {
       return;
     }
 
-    setEnrolling(true);
+    // If course is free (price 0), proceed to direct enrollment
+    if (course.price === 0) {
+      setEnrolling(true);
+      try {
+        await courseApi.enroll(token, course.id);
+        setIsEnrolled(true);
+        setEnrollmentStatus('ACTIVE');
+        dispatch(addToast(toast.success('Successfully enrolled!', 'You can now start learning.')));
+        router.push(`/student/courses/${course.id}`);
+      } catch (err: any) {
+        dispatch(addToast(toast.error(err.message || 'Enrollment failed')));
+      } finally {
+        setEnrolling(false);
+      }
+    } else {
+      // If paid, show checkout modal
+      setShowCheckout(true);
+    }
+  };
+
+  const handleCheckoutConfirm = async (paymentMethod: string) => {
     try {
-      await courseApi.enroll(token, course.id);
+      await paymentApi.checkout(token, { courseId: course.id, paymentMethod });
       setIsEnrolled(true);
       setEnrollmentStatus('ACTIVE');
-      dispatch(addToast(toast.success('Successfully enrolled!', 'You can now start learning.')));
+      setShowCheckout(false);
+      dispatch(addToast(toast.success('Payment Successful!', 'You have been enrolled in the course.')));
       router.push(`/student/courses/${course.id}`);
     } catch (err: any) {
-      dispatch(addToast(toast.error(err.message || 'Enrollment failed')));
-    } finally {
-      setEnrolling(false);
+      dispatch(addToast(toast.error(err.message || 'Payment failed')));
     }
   };
 
@@ -109,6 +130,13 @@ export default function CourseDetailPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pt-20">
       <Navbar />
+      
+      <CheckoutModal 
+        isOpen={showCheckout}
+        onClose={() => setShowCheckout(false)}
+        course={course}
+        onConfirm={handleCheckoutConfirm}
+      />
       
       {/* Hero Header Section */}
       <section className="bg-slate-900 text-white py-16 relative overflow-hidden">
@@ -362,10 +390,4 @@ export default function CourseDetailPage() {
   );
 }
 
-function ArrowRight({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-    </svg>
-  );
-}
+

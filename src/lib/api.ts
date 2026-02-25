@@ -206,3 +206,18 @@ export const userApi = {
   removeFromWishlist: (token: string, courseId: string) =>
     request<any>(`/api/students/wishlist/${courseId}`, { method: 'DELETE', token }),
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Payment endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+export const paymentApi = {
+  checkout: (token: string, data: { courseId: string; paymentMethod?: string }) =>
+    request<any>('/api/payments/checkout', { method: 'POST', body: data, token }),
+
+  getHistory: (token: string) =>
+    request<any[]>('/api/payments/history', { token }),
+
+  getInstructorEarnings: (token: string) =>
+    request<any>('/api/payments/instructor/earnings', { token }),
+};
+

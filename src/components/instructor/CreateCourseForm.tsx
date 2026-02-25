@@ -13,7 +13,7 @@ import {
 import { z } from 'zod';
 
 import { useAppDispatch, useAppSelector } from '@/store';
-import { createCourse } from '@/store/coursesSlice';
+import { createCourse, clearError } from '@/store/coursesSlice';
 import { addToast, toast } from '@/store/uiSlice';
 import { adminApi, courseApi } from '@/lib/api';
 import { courseBasicSchema, courseThumbnailSchema } from '@/lib/schemas';
@@ -135,6 +135,9 @@ export default function CreateCourseForm() {
 
   // Fetch categories (public API accessible to instructors)
   useEffect(() => {
+    // Clear stale errors when entering the creation flow
+    dispatch(clearError()); 
+
     courseApi.getCategories()
       .then((cats) => setCategories(cats))
       .catch(() => dispatch(addToast(toast.error('Could not load categories'))))
