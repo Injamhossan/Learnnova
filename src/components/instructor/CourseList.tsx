@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import {
   BookOpen, Users, DollarSign, Star, Plus, Edit3, Trash2,
   Eye, LayoutGrid, List, Search, Filter, Globe, Lock,
-  MoreHorizontal, TrendingUp, Loader2, AlertCircle,
+  MoreHorizontal, TrendingUp, Loader2, AlertCircle, RefreshCw,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchMyCourses, deleteCourse, Course } from '@/store/coursesSlice';
@@ -172,7 +172,7 @@ function CourseRow({ course, onDelete }: { course: Course; onDelete: (id: string
 export default function CourseList() {
   const { data: session } = useSession();
   const dispatch = useAppDispatch();
-  const { myCourses, loading, deleting } = useAppSelector((s) => s.courses);
+  const { myCourses, loading, deleting, error } = useAppSelector((s) => s.courses);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
@@ -273,6 +273,20 @@ export default function CourseList() {
             {[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-slate-100 rounded-xl" />)}
           </div>
         )
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center bg-red-50 rounded-2xl border border-red-100">
+          <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
+          <h3 className="text-base font-bold text-red-700 mb-1">Failed to load courses</h3>
+          <p className="text-sm text-red-500 mb-5 max-w-sm px-6">
+            {error}
+          </p>
+          <button 
+            onClick={() => token && dispatch(fetchMyCourses(token))}
+            className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-red-700 transition-all shadow-sm"
+          >
+            <RefreshCw className="w-4 h-4" /> Try Again
+          </button>
+        </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-slate-200">
           <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
@@ -281,7 +295,7 @@ export default function CourseList() {
           <h3 className="text-base font-bold text-slate-700 mb-1">
             {search ? 'No courses match your search' : 'No courses yet'}
           </h3>
-          <p className="text-sm text-slate-400 mb-5">
+          <p className="text-sm text-slate-400 mb-5 px-6">
             {search ? 'Try a different keyword.' : 'Create your first course to start teaching.'}
           </p>
           {!search && (
