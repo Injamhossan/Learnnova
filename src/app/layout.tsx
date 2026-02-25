@@ -25,7 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${manrope.variable} font-sans antialiased bg-white text-slate-900`}>
+      <body 
+        className={`${manrope.variable} font-sans antialiased bg-white text-slate-900`}
+        suppressHydrationWarning
+      >
         <StoreProvider>
           <SessionProviderWrapper>
             <Suspense fallback={null}>

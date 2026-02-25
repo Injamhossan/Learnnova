@@ -4,6 +4,7 @@
  */
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+console.log('🚀 Learnova API Client initialized with BASE_URL:', BASE_URL);
 
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -21,6 +22,8 @@ export class ApiError extends Error {
 
 export async function request<T>(endpoint: string, opts: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, token, signal } = opts;
+
+  console.log(`[API Request] ${method} ${BASE_URL}${endpoint}`);
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
