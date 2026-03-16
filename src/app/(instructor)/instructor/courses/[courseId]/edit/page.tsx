@@ -179,7 +179,24 @@ function LessonEditModal({
     videoDurationSeconds: lesson.videoDurationSeconds || 0,
     isPreview: lesson.isPreview || false,
   });
+  const [detecting, setDetecting] = useState(false);
   const dispatch = useAppDispatch();
+
+  const handleDetectDuration = async (url: string) => {
+    if (!url || !url.includes('youtu')) return;
+    setDetecting(true);
+    try {
+      const data = await courseApi.getYoutubeDuration(token, url);
+      if (data.durationSeconds) {
+        setFormData(prev => ({ ...prev, videoDurationSeconds: data.durationSeconds }));
+        dispatch(addToast(toast.success('Duration auto-detected!')));
+      }
+    } catch {
+      // Silently fail or do nothing if URL isn't loaded
+    } finally {
+      setDetecting(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,10 +258,12 @@ function LessonEditModal({
                 <input 
                   value={formData.videoUrl}
                   onChange={e => setFormData({...formData, videoUrl: e.target.value})}
-                  placeholder="https://vimeo..."
+                  onBlur={e => handleDetectDuration(e.target.value)}
+                  placeholder="https://youtube.com/watch?v=..."
                   className={cn(inputCls(), 'pl-9')}
                 />
               </div>
+              <p className="text-[10px] text-slate-400 mt-1">Upload on YouTube and paste the link here.{detecting && <span className="text-amber-500 ml-2 animate-pulse">Detecting...</span>}</p>
             </div>
             <div>
               <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Duration (Seconds)</label>

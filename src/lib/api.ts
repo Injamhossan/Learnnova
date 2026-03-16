@@ -103,8 +103,8 @@ export const courseApi = {
     return request<any>(`/api/courses?${q}`);
   },
 
-  getCourseDetail: (idOrSlug: string) =>
-    request<any>(`/api/courses/${idOrSlug}`),
+  getCourseDetail: (idOrSlug: string, token?: string) =>
+    request<any>(`/api/courses/${idOrSlug}`, { token }),
 
   getMyCourses: (token: string) =>
     request<any[]>('/api/courses/my-courses', { token }),
@@ -162,6 +162,12 @@ export const courseApi = {
 
   getCategories: () =>
     request<any[]>('/api/courses/categories'),
+
+  updateLessonProgress: (token: string, lessonId: string, isCompleted: boolean) =>
+    request<any>(`/api/students/progress/${lessonId}`, { method: 'PATCH', body: { isCompleted }, token }),
+
+  getYoutubeDuration: (token: string, url: string) =>
+    request<{ durationSeconds: number }>(`/api/courses/utils/youtube-duration?url=${encodeURIComponent(url)}`, { token }),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
