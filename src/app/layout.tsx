@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import ClientLayout from "@/components/layout/ClientLayout";
 import SessionProviderWrapper from "@/components/layout/SessionProviderWrapper";
 import StoreProvider from "@/components/providers/StoreProvider";
@@ -8,8 +8,8 @@ import ToastContainer from "@/components/ui/ToastContainer";
 import GlobalLoader from "@/components/common/GlobalLoader";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body 
-        className={`${manrope.variable} font-sans antialiased bg-white text-slate-900`}
+        className={`${inter.variable} font-sans antialiased bg-white text-slate-900`}
         suppressHydrationWarning
       >
         <StoreProvider>

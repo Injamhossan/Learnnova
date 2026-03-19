@@ -51,8 +51,8 @@ export default function Navbar() {
       >
         <div 
           className={cn(
-            "mx-auto max-w-7xl flex h-16 items-center justify-between rounded-full bg-white/80 px-6 shadow-sm backdrop-blur-xl transition-all ring-1 ring-slate-900/5",
-            isScrolled && "shadow-md bg-white/90"
+            "mx-auto max-w-7xl flex h-16 items-center justify-between rounded-full bg-white px-6 shadow-sm transition-all ring-1 ring-slate-900/5",
+            isScrolled && "shadow-md bg-white"
           )}
         >
           {/* Logo */}
@@ -153,7 +153,7 @@ export default function Navbar() {
       {/* Mobile Menu Overlay */}
       <div 
         className={cn(
-          "fixed inset-0 z-50 bg-slate-900/20 backdrop-blur-sm transition-opacity duration-300 md:hidden",
+          "fixed inset-0 z-50 bg-slate-900/40 transition-opacity duration-300 md:hidden",
           mobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
         )}
         onClick={() => setMobileMenuOpen(false)}

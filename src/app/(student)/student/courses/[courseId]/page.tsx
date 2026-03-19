@@ -22,7 +22,7 @@ import { useAppDispatch } from '@/store';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
-const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as any;
+const ReactPlayer = dynamic(() => import('react-player').then(m => m.default), { ssr: false }) as any;
 
 interface Lesson {
   id: string;
@@ -73,8 +73,9 @@ export default function CoursePlayerPage() {
       const data = await courseApi.getCourseDetail(courseId, token);
       console.log('[CoursePlayer] Course loaded:', data?.title, '| First lesson URL:', data?.sections?.[0]?.lessons?.[0]?.videoUrl);
       setCourse(data);
-      if (data.sections?.length > 0 && data.sections[0].lessons?.length > 0) {
-        setCurrentLesson(data.sections[0].lessons[0]);
+      const flatLessons = data.sections?.flatMap((s: any) => s.lessons || []) || [];
+      if (flatLessons.length > 0) {
+        setCurrentLesson(flatLessons[0]);
       }
     } catch (err: any) {
       console.error('[CoursePlayer] Error loading course:', err);
@@ -191,7 +192,7 @@ export default function CoursePlayerPage() {
             {currentLesson?.videoUrl ? (
               <ReactPlayer
                 key={currentLesson.id}
-                url={currentLesson.videoUrl}
+                url={currentLesson.videoUrl.trim()}
                 width="100%"
                 height="100%"
                 controls

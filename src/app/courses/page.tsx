@@ -155,11 +155,11 @@ export default function CoursesPage() {
                               <BookOpen className="w-12 h-12 text-slate-200" />
                             </div>
                           )}
-                          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-slate-900 shadow-sm uppercase tracking-wider">
+                          <div className="absolute top-3 left-3 bg-white px-3 py-1 rounded-full text-[10px] font-bold text-slate-900 shadow-sm uppercase tracking-wider">
                               {course.category?.name || 'Uncategorized'}
                           </div>
                           {course.level && (
-                             <div className="absolute bottom-3 left-3 bg-slate-900/40 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase">
+                             <div className="absolute bottom-3 left-3 bg-slate-900 px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase">
                                 {course.level}
                              </div>
                           )}

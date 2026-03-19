@@ -13,7 +13,7 @@ export default function InstructorLayoutShell({ children }: { children: React.Re
       {/* Mobile overlay backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/30 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-20 bg-black/40 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}

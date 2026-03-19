@@ -15,7 +15,7 @@ export default function InstructorHeader({ title, subtitle, actions }: Instructo
   const user = session?.user as any;
 
   return (
-    <header className="h-16 border-b border-slate-200/80 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md shrink-0 sticky top-0 z-20">
+    <header className="h-16 border-b border-slate-200/80 flex items-center justify-between px-8 bg-white shrink-0 sticky top-0 z-20">
       {/* Left */}
       <div className="min-w-0">
         <h1 className="text-lg font-bold text-slate-900 leading-tight truncate">{title}</h1>

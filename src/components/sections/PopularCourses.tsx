@@ -109,7 +109,7 @@ export default function PopularCourses() {
 
                     {/* Badge */}
                     <div className="absolute top-4 left-4 z-20">
-                      <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/20 shadow-sm">
+                      <span className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
                         {course.level}
                       </span>
                     </div>
