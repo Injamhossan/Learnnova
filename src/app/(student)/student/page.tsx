@@ -44,7 +44,7 @@ function StatCard({
   icon: React.ElementType; label: string; value: string | number; sublabel?: string; color: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:shadow-md hover:shadow-slate-200/50 transition-all">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4 hover:border-slate-300 transition-all">
       <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center shrink-0', color)}>
         <Icon className="w-5 h-5 text-white" />
       </div>
@@ -61,7 +61,7 @@ function ProgressBar({ value }: { value: number }) {
   return (
     <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
       <div
-        className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-700"
+        className="h-full bg-blue-600 rounded-full transition-all duration-700"
         style={{ width: `${Math.min(value, 100)}%` }}
       />
     </div>
@@ -151,7 +151,7 @@ export default function StudentDashboardPage() {
 
         {/* ── Daily Streak Banner ── */}
         {!loading && (
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-5 flex items-center justify-between overflow-hidden relative">
+          <div className="bg-slate-900 rounded-2xl p-5 flex items-center justify-between overflow-hidden relative">
             <div className="absolute right-0 top-0 bottom-0 w-32 opacity-10">
               <Flame className="w-32 h-32 text-white" />
             </div>

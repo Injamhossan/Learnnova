@@ -106,7 +106,7 @@ export default function StudentSidebar({ collapsed, setCollapsed }: StudentSideb
                     className={cn(
                       'flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative',
                       isActive(href) 
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
+                        ? 'bg-blue-600 text-white' 
                         : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                     )}
                   >
