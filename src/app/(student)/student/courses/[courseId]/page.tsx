@@ -22,7 +22,7 @@ import { useAppDispatch } from '@/store';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
-const ReactPlayer = dynamic(() => import('react-player').then(m => m.default), { ssr: false }) as any;
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false }) as any;
 
 interface Lesson {
   id: string;
@@ -47,6 +47,15 @@ interface Course {
   description: string;
   sections: Section[];
   instructor: { user: { fullName: string } };
+}
+
+function getYouTubeEmbedUrl(url: string) {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube(?:-nocookie|education)?\.com\/(?:embed\/|v\/|watch\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))((\w|-){11})/);
+  if (match && match[1]) {
+    return `https://www.youtube.com/embed/${match[1]}?autoplay=1&modestbranding=1&rel=0`;
+  }
+  return null;
 }
 
 export default function CoursePlayerPage() {
@@ -190,19 +199,23 @@ export default function CoursePlayerPage() {
           {/* Video */}
           <div className="w-full bg-black aspect-video shrink-0">
             {currentLesson?.videoUrl ? (
-              <ReactPlayer
-                key={currentLesson.id}
-                url={currentLesson.videoUrl.trim()}
-                width="100%"
-                height="100%"
-                controls
-                onEnded={() => handleToggleComplete(currentLesson.id)}
-                config={{
-                  youtube: {
-                    playerVars: { modestbranding: 1, rel: 0 },
-                  } as any,
-                }}
-              />
+              getYouTubeEmbedUrl(currentLesson.videoUrl) ? (
+                <iframe 
+                  src={getYouTubeEmbedUrl(currentLesson.videoUrl)!}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <ReactPlayer
+                  key={currentLesson.id}
+                  url={currentLesson.videoUrl.trim()}
+                  width="100%"
+                  height="100%"
+                  controls
+                  onEnded={() => handleToggleComplete(currentLesson.id)}
+                />
+              )
             ) : (
               <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">
                 No video available for this lesson

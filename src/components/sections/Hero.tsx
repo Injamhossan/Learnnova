@@ -4,124 +4,93 @@ import { BookOpen, CheckCircle, Users } from 'lucide-react';
 import Image from 'next/image';
 import heroImage from '@/assets/hero-image.jpg';
 import Counter from '@/components/ui/Counter';
-import { motion, Variants } from 'framer-motion';
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-      delayChildren: 0.3
-    }
-  }
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
-  }
-};
-
-const imageVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9, x: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    x: 0,
-    transition: { duration: 0.8, ease: "easeOut", delay: 0.5 }
-  }
-};
+import { useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 export default function Hero() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Initial load timeline
+    const tl = gsap.timeline({ 
+      defaults: { opacity: 0, ease: 'power4.out', duration: 1 } 
+    });
+
+    tl.from('.bg-glow-1', { scale: 0.5, duration: 1.5 })
+      .from('.bg-glow-2', { scale: 0.5, duration: 1.5 }, '-=1')
+      .from('.hero-badge', { y: 30 }, '-=1.2')
+      .from('.hero-title', { y: 40, duration: 1.2 }, '-=0.8')
+      .from('.hero-text', { y: 20 }, '-=0.9')
+      .from('.hero-button', { y: 20, stagger: 0.15 }, '-=0.8')
+      .from('.hero-image-box', { scale: 0.9, x: 30, duration: 1.2 }, '-=0.9')
+      .from('.hero-floating', { scale: 0, stagger: 0.2, ease: 'back.out(1.5)' }, '-=0.5')
+      .from('.stats-card', { y: 100, opacity: 0, duration: 0.8 }, '-=0.3');
+
+    // Continuous floating animation
+    gsap.to('.hero-float-1', { y: -12, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    gsap.to('.hero-float-2', { y: 12, duration: 3.5, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.4 });
+    
+    // Parallax scrolling on blobs
+    gsap.to('.bg-glow-1', {
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+      },
+      y: 100,
+    });
+  }, { scope: containerRef });
+
   return (
-    <section className="relative z-10 bg-slate-900 px-4 py-24 sm:px-6 lg:px-8 md:py-32">
+    <section ref={containerRef} className="relative z-10 bg-slate-900 px-4 py-24 sm:px-6 lg:px-8 md:py-32">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute -top-1/4 -right-1/4 w-[600px] h-[600px] bg-yellow-400/10 rounded-full blur-3xl" 
-        />
-        <motion.div 
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-          className="absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-3xl" 
-        />
+        <div className="bg-glow-1 absolute -top-1/4 -right-1/4 w-[600px] h-[600px] bg-yellow-400/10 rounded-full blur-3xl" />
+        <div className="bg-glow-2 absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-3xl" />
       </div>
 
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="mx-auto flex relative z-10 max-w-7xl flex-col items-center justify-between gap-16 lg:flex-row"
-      >
+      <div className="mx-auto flex relative z-10 max-w-7xl flex-col items-center justify-between gap-16 lg:flex-row">
         {/* Left Content */}
         <div className="flex max-w-xl flex-col items-start gap-8 lg:w-1/2">
-          <motion.div 
-            variants={itemVariants}
-            className="inline-flex items-center rounded-full bg-slate-800 px-3 py-1 text-sm font-medium text-yellow-400 ring-1 ring-inset ring-slate-700 font-satoshi"
-          >
+          <div className="hero-badge inline-flex items-center rounded-full bg-slate-800 px-3 py-1 text-sm font-medium text-yellow-400 ring-1 ring-inset ring-slate-700 font-satoshi">
             <span className="mr-2">🚀</span> The future of online learning
-          </motion.div>
+          </div>
 
-          <motion.h1 
-            variants={itemVariants}
-            className="font-satoshi text-4xl font-bold tracking-tight text-white sm:text-6xl/none"
-          >
+          <h1 className="hero-title font-satoshi text-4xl font-bold tracking-tight text-white sm:text-6xl/none">
             Learn Without <span className="relative inline-block">
               <span className="text-yellow-400">Limits</span>
-              <motion.svg 
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 0.8, delay: 1.2, ease: "easeInOut" }}
-                className="absolute -bottom-2 left-0 h-3 text-yellow-400 opacity-80" 
+              <svg 
+                className="absolute -bottom-2 left-0 h-3 text-yellow-400 opacity-80 w-full" 
                 viewBox="0 0 200 9" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M2.00025 6.99997C25.8571 2.99999 74.3228 -1.23239 127.329 1.49257C177.306 4.06173 207.828 6.99998 219.001 6.99998" stroke="currentColor" strokeWidth="3"></path>
-              </motion.svg>
+              </svg>
             </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p 
-            variants={itemVariants}
-            className="text-lg text-slate-300 sm:text-xl/8 font-satoshi"
-          >
+          <p className="hero-text text-lg text-slate-300 sm:text-xl/8 font-satoshi">
             Unlock your potential with world-class courses, expert instructors, and a learning experience designed to take you further — faster.
-          </motion.p>
+          </p>
 
-          <motion.div 
-            variants={itemVariants}
-            className="flex flex-col gap-4 sm:flex-row sm:items-center"
-          >
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex h-12 items-center justify-center rounded-lg bg-yellow-400 px-8 text-base font-medium text-slate-900 transition-shadow hover:shadow-lg hover:shadow-yellow-400/20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:pointer-events-none disabled:opacity-50 font-satoshi"
-            >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <button className="hero-button inline-flex h-12 items-center justify-center rounded-lg bg-yellow-400 px-8 text-base font-semibold text-slate-900 transition-all hover:shadow-lg hover:shadow-yellow-400/30 hover:scale-105 active:scale-95 duration-200 cursor-pointer font-satoshi">
               Start Learning Free
-            </motion.button>
-            <motion.button 
-              whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
-              className="inline-flex h-12 items-center justify-center rounded-lg border border-slate-700 bg-transparent px-8 text-base font-medium text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:pointer-events-none disabled:opacity-50"
-            >
+            </button>
+            <button className="hero-button inline-flex h-12 items-center justify-center rounded-lg border border-slate-700 bg-transparent px-8 text-base font-medium text-white transition-all hover:bg-white/5 cursor-pointer">
               Browse Courses
-            </motion.button>
-          </motion.div>
+            </button>
+          </div>
         </div>
 
         {/* Right Content - Hero Image */}
-        <motion.div 
-          variants={imageVariants}
-          className="relative w-full max-w-[600px] lg:w-1/2"
-        >
+        <div className="hero-image-box relative w-full max-w-[600px] lg:w-1/2">
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-800 shadow-2xl ring-1 ring-white/10">
             <Image 
               src={heroImage}
@@ -135,18 +104,10 @@ export default function Hero() {
           </div>
           
           {/* Decorative floating elements */}
-          <motion.div 
-            animate={{ y: [0, -15, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-6 -right-6 h-24 w-24 rounded-2xl bg-white shadow-xl flex items-center justify-center"
-          >
+          <div className="hero-floating hero-float-1 absolute -top-6 -right-6 h-24 w-24 rounded-2xl bg-white shadow-xl flex items-center justify-center">
              <div className="text-3xl">🎯</div>
-          </motion.div>
-          <motion.div 
-            animate={{ y: [0, 15, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-            className="absolute -bottom-6 -left-6 h-20 w-48 rounded-2xl bg-white shadow-xl p-4 flex items-center gap-3"
-          >
+          </div>
+          <div className="hero-floating hero-float-2 absolute -bottom-6 -left-6 h-20 w-48 rounded-2xl bg-white shadow-xl p-4 flex items-center gap-3">
              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                <BookOpen className="h-5 w-5" />
              </div>
@@ -154,17 +115,12 @@ export default function Hero() {
                <div className="text-xs text-slate-500">Live Classes</div>
                <div className="text-sm font-bold text-slate-900">12 Available</div>
              </div>
-          </motion.div>
-        </motion.div>
-      </motion.div>
+          </div>
+        </div>
+      </div>
 
       {/* Stats Floating Card */}
-      <motion.div 
-        initial={{ opacity: 0, y: 150, x: "-50%" }}
-        animate={{ opacity: 1, y: "50%", x: "-50%" }}
-        transition={{ duration: 0.8, delay: 1, ease: "easeOut" }}
-        className="absolute bottom-0 left-1/2 w-full max-w-5xl px-6 sm:px-0 z-20"
-      >
+      <div className="stats-card absolute bottom-0 left-1/2 w-full max-w-5xl px-6 sm:px-0 z-20 translate-y-1/2 -translate-x-1/2">
         <div className="grid grid-cols-1 gap-8 rounded-2xl bg-white p-10 shadow-2xl ring-1 ring-slate-900/5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-slate-100">
           
           <div className="flex items-center justify-center gap-4 sm:px-4">
@@ -198,7 +154,8 @@ export default function Hero() {
           </div>
 
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }
+

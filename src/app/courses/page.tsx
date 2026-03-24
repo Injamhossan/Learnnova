@@ -113,14 +113,14 @@ export default function CoursesPage() {
                 {(searchTerm || selectedCat !== "All") && (
                     <button 
                         onClick={() => { setSearchTerm(""); setSelectedCat("All"); }}
-                        className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all font-bold text-sm font-satoshi shrink-0"
+                        className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass text-slate-700 font-bold text-sm font-satoshi shrink-0 active:scale-95"
                     >
                         <X className="h-4 w-4" />
                         Clear
                     </button>
                 )}
 
-                <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 font-bold text-sm shrink-0 font-satoshi active:scale-95">
+                <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl glass-dark text-white shadow-xl shadow-slate-200/40 font-bold text-sm shrink-0 font-satoshi active:scale-95">
                     Search
                 </button>
             </div>

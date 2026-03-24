@@ -18,8 +18,16 @@ import { getCourseById, updateCourse, publishCourse } from '@/store/coursesSlice
 import { addToast, toast } from '@/store/uiSlice';
 import { courseApi, adminApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
+function ClientOnlyPlayer(props: any) {
+  const [Player, setPlayer] = useState<any>(null);
+  useEffect(() => {
+    import('react-player').then((mod) => setPlayer(() => mod.default));
+  }, []);
+  if (!Player) return <div className="animate-pulse bg-slate-900 w-full h-full" />;
+  return <Player {...props} />;
+}
 
-// ── tiny helpers ──────────────────────────────────────────────────────────────
+// ── tiny helpers
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
   return <p className="flex items-center gap-1 text-xs text-red-500 font-semibold mt-1"><AlertCircle className="w-3 h-3" />{msg}</p>;
@@ -198,6 +206,15 @@ function LessonEditModal({
     }
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.videoUrl && (formData.videoDurationSeconds === 0 || !formData.videoDurationSeconds)) {
+        handleDetectDuration(formData.videoUrl);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [formData.videoUrl]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -278,7 +295,7 @@ function LessonEditModal({
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
             <input 
               type="checkbox"

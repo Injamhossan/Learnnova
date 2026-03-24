@@ -21,7 +21,7 @@ const CallToAction = dynamic(() => import("@/components/sections/CallToAction"))
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-yellow-400/30">
+    <main className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-yellow-400/30 overflow-x-hidden">
       
       <Hero />
       <Features />

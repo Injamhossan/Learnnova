@@ -159,3 +159,26 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-md bg-white/30 border border-white/20 shadow-sm transition-all duration-200;
+  }
+  .glass:hover {
+    @apply bg-white/40 border-white/30;
+  }
+  
+  .glass-dark {
+    @apply backdrop-blur-md bg-slate-900/60 border border-slate-800/40 shadow-sm transition-all duration-200;
+  }
+  .glass-dark:hover {
+    @apply bg-slate-900/80 border-slate-700/50;
+  }
+
+  .glass-glow {
+    @apply backdrop-blur-md bg-gradient-to-br from-white/10 to-transparent border border-white/20 shadow-white/5 transition-all duration-300;
+  }
+  .glass-glow:hover {
+    @apply from-white/20 border-white/40 shadow-white/10;
+  }
+}
