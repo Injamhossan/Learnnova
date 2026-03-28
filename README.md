@@ -1,6 +1,6 @@
 # Learnova Frontend 🎓
 
-Learnova is a premium, high-performance Learning Management System (LMS) frontend built with **Next.js 16**, **React 19**, **TypeScript**, and **Framer Motion**. It provides a stunning, interactive experience for students, instructors, and administrators.
+Learnova is a premium, high-performance Learning Management System (LMS) frontend built with **Next.js 16**, **React 19**, **TypeScript**, **Framer Motion**, and **GSAP**. It provides a stunning, interactive experience for students, instructors, and administrators.
 
 ---
 
@@ -32,8 +32,8 @@ Learnova follows a modern **Unified Fullstack Architecture** (using Next.js as t
 
 What makes Learnova stand out in the crowded LMS market?
 
-- **Premium Aesthetics**: Unlike generic templates, Learnova uses custom **glassmorphism**, sleek gradients, and a curated color palette to feel like a high-end SaaS product.
-- **Immersive Animations**: Every interaction—from page transitions to button hovers—is choreographed with **Framer Motion** to provide tactile feedback.
+- **Minimalist & Premium Aesthetics**: Embracing a clean, minimalist design with custom **glassmorphism**, sleek gradients, and a curated typography to feel like a high-end SaaS product without the visual clutter.
+- **Immersive Animations**: Every interaction—from page transitions to button hovers—is fluidly choreographed with **GSAP** and **Framer Motion** to provide tactile, dynamic feedback.
 - **Role-Centric Design**: 
     - **Students**: Focused on focus-mode learning and progress tracking.
     - **Instructors**: A data-driven dashboard for course management.
@@ -52,7 +52,7 @@ We chose our stack based on performance, scalability, and modern standards:
 | **React 19** | Access to Server Actions and the built-in React Compiler for optimized builds. |
 | **TypeScript** | Ensures type safety, reduces runtime bugs, and provides a superior Developer Experience (DX). |
 | **Tailwind CSS 4** | Ultra-efficient styling that scales without bloating the CSS bundle. |
-| **Framer Motion** | Industry-leading animation library for complex layout changes and scroll-driven effects. |
+| **Framer Motion & GSAP** | Industry-leading animation libraries for complex layout changes, timeline animations, and scroll-driven effects. |
 | **Redux Toolkit** | Manages complex application state across nested routes as a "single source of truth". |
 | **Lucide Icons** | Consistent, modern, and accessible icon set for a premium feel. |
 
@@ -98,8 +98,8 @@ pnpm dev
 ## 📑 Key Features
 - **Advanced Auth**: Social login, OTP verification, and secure password resets.
 - **Dynamic Course Explorer**: Intelligent searching and filtering.
-- **Student Dashboard**: Progress tracking and course management.
-- **Instructor Suite**: Course creation and analytics.
+- **Student Dashboard**: Precise course progress tracking, state-of-the-art robust video playback via intelligent iframe embedding, and focused learning modes.
+- **Instructor Suite**: Clean UI for course creation, analytics, and auto-detection of YouTube video durations bypassing rate limits with client-side utilities.
 - **Admin Command Center**: Complete user and category control.
 
 ---
